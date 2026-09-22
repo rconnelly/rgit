@@ -35,6 +35,17 @@ If the command is not found, add Cargo’s bin directory to your `PATH`:
 export PATH="$HOME/.cargo/bin:$PATH"
 ```
 
+## Production Ubuntu
+
+Pack this checkout and copy it onto a server over SSH (the host never talks to GitHub). Same flow as Burton and Rabun:
+
+```bash
+./deploy/ubuntu/push.sh --pack --bootstrap user@HOST
+./deploy/ubuntu/push.sh --pack user@HOST
+```
+
+Layout, systemd, and first admin user: [deploy Ubuntu](deploy-ubuntu.md).
+
 ## Check that git works
 
 ```bash

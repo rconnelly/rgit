@@ -1,0 +1,39 @@
+[Unit]
+Description=Rabun git forge
+Documentation=https://github.com/Burton-Workspaces/rabun-git
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rabun-git
+Group=rabun-git
+WorkingDirectory=/var/lib/rabun-git
+Environment=HOME=/var/lib/rabun-git
+Environment=RUST_LOG=rabun_git=info
+Environment=RABUN_GIT_CONFIG=/etc/rabun-git/rabun-git.toml
+Environment=RABUN_GIT_ROOT=/var/lib/rabun-git
+Environment=RABUN_GIT_HEALTH_BIND=127.0.0.1:8792
+Environment=RABUN_GIT_STATUS_FILE=/var/lib/rabun-git/status.json
+EnvironmentFile=-/etc/rabun-git/rabun-git.env
+ExecStart=/usr/local/bin/rabun-git serve
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rabun-git
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+ReadWritePaths=/var/lib/rabun-git
+
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,8 @@
 
 These steps run **on the server** that will store repositories. Replace `ada` with your login and `git.example.com` with that machine’s hostname or IP.
 
+On Ubuntu you can pack this checkout and install a systemd unit instead of running `serve` in a terminal: [deploy Ubuntu](deploy-ubuntu.md) (`./deploy/ubuntu/push.sh --pack --bootstrap user@HOST`). The rest of this page is the manual path (`init` in a working directory).
+
 ## 1. Create the data directory and config
 
 Pick a working directory (any folder is fine) and initialize:
@@ -91,7 +93,7 @@ Open **TCP 2222** on the firewall if laptops are not on the same machine. Port *
 
 On first start, the forge writes an SSH host key at `$RABUN_GIT_ROOT/ssh_host_ed25519_key`. Laptops will ask you to trust that host key the first time they connect.
 
-For a systemd unit example, see [architecture.md](architecture.md#systemd).
+For a systemd unit and pack/push, see [deploy Ubuntu](deploy-ubuntu.md) and [architecture.md](architecture.md#systemd).
 
 ## 6. Smoke-test SSH from a laptop
 

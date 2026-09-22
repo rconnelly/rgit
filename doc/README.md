@@ -16,7 +16,7 @@ If you know `git clone`, `git commit`, and `git push`, start at the top and foll
 8. [CI workflows](ci-workflows.md) — `.rabun/workflows` on push, tag, and request
 9. [Command reference](commands.md) — CLI and SSH cheat sheet
 
-Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md).
+Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md).
 
 ## Two jobs you will do
 

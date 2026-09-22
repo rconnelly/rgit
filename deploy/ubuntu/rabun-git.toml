@@ -1,0 +1,3 @@
+# /etc/rabun-git/rabun-git.toml — created by bootstrap; safe to edit.
+root_env = "RABUN_GIT_ROOT"
+ssh_bind = "0.0.0.0:2222"

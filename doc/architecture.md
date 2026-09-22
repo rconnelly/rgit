@@ -14,7 +14,7 @@ Developer laptop                 Your server
                                  .rabun/workflows runner
 ```
 
-SSH is the only public network surface (default `0.0.0.0:2222`). Loopback `GET /health` is companion heartbeat only (`127.0.0.1:8792`). There is no HTTP git UI.
+SSH is the only public network surface (default `0.0.0.0:2222`; russh username `git`). Loopback `GET /health` is companion heartbeat only (`127.0.0.1:8792`). There is no HTTP git UI. The systemd user is `rabun-git`; admin SSH on port 22 is unchanged.
 
 ## Layout
 
@@ -50,26 +50,31 @@ Stored in git so they clone with the repo:
 
 ## Workflows
 
-`.rabun/workflows/*.yml` at the triggering commit. Subset: `on.push.branches`, `on.tag`, `on.request`, `jobs.*.steps[].run`, `env`, `timeout_minutes`. No `uses:`, matrix, or containers. The runner is trusted (same machine, same `git` user).
+`.rabun/workflows/*.yml` at the triggering commit. Subset: `on.push.branches`, `on.tag`, `on.request`, `jobs.*.steps[].run`, `env`, `timeout_minutes`. No `uses:`, matrix, or containers. The runner is trusted (same machine, same `rabun-git` systemd user).
 
 ## systemd
 
+Pack this checkout and copy it onto Ubuntu over SSH (same flow as Burton and Rabun): [deploy Ubuntu](deploy-ubuntu.md). The unit shipped in `deploy/ubuntu/rabun-git.service` runs as user `rabun-git` with forge data under `/var/lib/rabun-git`. Git clients still use `ssh://git@HOST:2222/…`.
+
 ```ini
 [Unit]
-Description=rabun-git forge
-After=network.target
+Description=Rabun git forge
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
+User=rabun-git
+Group=rabun-git
+WorkingDirectory=/var/lib/rabun-git
+Environment=RABUN_GIT_CONFIG=/etc/rabun-git/rabun-git.toml
+Environment=RABUN_GIT_ROOT=/var/lib/rabun-git
 EnvironmentFile=-/etc/rabun-git/rabun-git.env
 ExecStart=/usr/local/bin/rabun-git serve
 Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
 ```
 
-Optional companion `rabun.toml` on the host:
+Optional companion `rabun.toml` on the host (`register-app.sh` upserts this on install):
 
 ```toml
 [[apps]]
@@ -81,7 +86,7 @@ health_url = "http://127.0.0.1:8792/health"
 status_file = "/var/lib/rabun-git/status.json"
 ```
 
-Secrets (if any) stay in `/etc/rabun-git/rabun-git.env`, not `/etc/rabun/rabun.env`.
+Settings stay in `/etc/rabun-git/rabun-git.env`, not `/etc/rabun/rabun.env`.
 
 ## Privacy
 

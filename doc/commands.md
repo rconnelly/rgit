@@ -84,4 +84,5 @@ git push origin HEAD:refs/rabun/requests/new/my-branch
 ## Further reading
 
 - [Architecture and systemd](architecture.md)
+- [Ubuntu pack/push](deploy-ubuntu.md)
 - [User guide index](README.md)
