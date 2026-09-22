@@ -3,6 +3,8 @@
 //! Hosts bare repositories over SSH, stores merge requests as git refs, and
 //! runs a small in-repo YAML workflow subset. This is not a Burton worker: there
 //! is no Postgres and this process does not write warehouse trees.
+//!
+//! The user guide lives in `doc/README.md` in the repository.
 
 pub mod acl;
 pub mod cli;

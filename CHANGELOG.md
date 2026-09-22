@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Beginner user guide under `doc/` (summary, remotes, users and roles, everyday git, merge requests, CI)
+
 ## [0.1.0]
 
 ### Added

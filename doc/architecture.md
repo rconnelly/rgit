@@ -1,5 +1,7 @@
 # rabun-git architecture
 
+How the forge is put together (layout, ACL, systemd). For a beginner walkthrough with examples, start at the [user guide](README.md).
+
 Self-hosted git forge CLI. Burton and Rabun do not import this crate. Warehouse workers remain the writers of warehouse trees; this process is a **git remote** they may push to.
 
 ```
@@ -66,6 +68,20 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
+
+Optional companion `rabun.toml` on the host:
+
+```toml
+[[apps]]
+name = "git"
+description = "Rabun git forge"
+command = "rabun-git"
+args = ["serve"]
+health_url = "http://127.0.0.1:8792/health"
+status_file = "/var/lib/rabun-git/status.json"
+```
+
+Secrets (if any) stay in `/etc/rabun-git/rabun-git.env`, not `/etc/rabun/rabun.env`.
 
 ## Privacy
 
