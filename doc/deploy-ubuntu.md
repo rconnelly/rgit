@@ -16,11 +16,13 @@ Do **not** `curl | bash` the bootstrap script from GitHub.
 
 ## 2. Bootstrap (once)
 
-From a clone on your laptop (`gh auth login` if you have not already). Pack this checkout and install in one step:
+From a clone on your laptop (`gh auth login` if you have not already). Pack this checkout and install in one step. SSH is **publickey only** (no sshd password prompt): use the account you already `ssh` to with a key, not `root@HOST` unless that key is in root’s `authorized_keys`.
 
 ```bash
 ./deploy/ubuntu/push.sh --pack --bootstrap user@HOST
 ```
+
+`--identity FILE` (or `RABUN_GIT_SSH_IDENTITY`) selects a private key. After login, install still needs root: passwordless sudo runs with no prompt; otherwise one **sudo** password (not SSH).
 
 `--env` is optional. If you pass it, the file is copied to **`/etc/rabun-git/rabun-git.env`** (0640). That is the correct place for `RABUN_GIT_ROOT` and bind overrides — not `/etc/rabun/rabun.env`.
 
@@ -32,13 +34,19 @@ First-time from a GitHub Release (latest stable if you omit the tag):
 
 `--pack` needs **pkg-config**, a C compiler, git, and Cargo (`./scripts/install-linux-build-deps.sh`). It names the archive with `git describe --tags --always --dirty` unless you pass a tag. Combine `--pack` with `--bootstrap` for a first-time host from this checkout.
 
-After bootstrap, add a forge admin (files under `/var/lib/rabun-git` must stay owned by `rabun-git`):
+After bootstrap, open an operator session and add a forge admin (files under `/var/lib/rabun-git` must stay owned by `rabun-git`):
 
 ```bash
-sudo -u rabun-git rabun-git user add ada --admin
-sudo -u rabun-git rabun-git key add ada --file /path/to/ada.pub
-sudo -u rabun-git rabun-git check
+rabun-git shell          # or: sudo rabun-git shell
+rabun-git user add ada --admin
+rabun-git key add ada --file /path/to/ada.pub
+rabun-git repo create ada/website
+exit
 ```
+
+`rabun-git shell` runs one `sudo` as the `rabun-git` user, then an interactive bash. `exit` ends the session. Mutating commands (`user`, `key`, `repo`, …) refuse to run as your login user so the service does not lose write access.
+
+`rabun-git check` and `rabun-git status` still work outside the session. After the first admin key is registered, laptops can create more repos without sudo: `ssh -p 2222 git@HOST repo create ada/website`. `key add --file` still needs a path on the host, so the shell is the better first-time flow.
 
 `rabun-git` loads `/etc/rabun-git/rabun-git.env`, so you do not need to pass `--config` when that file sets `RABUN_GIT_CONFIG`.
 

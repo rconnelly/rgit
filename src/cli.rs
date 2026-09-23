@@ -37,6 +37,8 @@ pub enum Commands {
         #[arg(long)]
         bind: Option<String>,
     },
+    /// Interactive bash as the systemd user (`rabun-git`; host only)
+    Shell,
     /// Forge users (`users.yaml`)
     User {
         #[command(subcommand)]
@@ -256,7 +258,38 @@ impl Commands {
                 | Commands::Check
                 | Commands::Status
                 | Commands::Serve { .. }
+                | Commands::Shell
                 | Commands::Hook { .. }
         )
+    }
+
+    /// Host commands that write forge data and must run as the systemd user.
+    pub fn requires_service_uid(&self) -> bool {
+        matches!(
+            self,
+            Commands::Init
+                | Commands::User { .. }
+                | Commands::Key { .. }
+                | Commands::Repo { .. }
+                | Commands::Access { .. }
+                | Commands::Request { .. }
+                | Commands::Run { .. }
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn shell_is_host_only() {
+        assert!(Commands::Shell.ssh_forbidden());
+        assert!(!Commands::Shell.requires_service_uid());
+        assert!(Commands::User {
+            command: UserCommands::List
+        }
+        .requires_service_uid());
+        assert!(!Commands::Check.requires_service_uid());
     }
 }

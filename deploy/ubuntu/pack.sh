@@ -71,8 +71,30 @@ if command -v rustc >/dev/null; then
   fi
 fi
 
+ensure_writable_dir() {
+  local dir="$1"
+  mkdir -p "$dir" || return 1
+  [[ -w "$dir" ]] || return 1
+  local probe="$dir/.rabun-git-pack-write-test"
+  : >"$probe" || return 1
+  rm -f "$probe"
+}
+
 OUT_DIR="${RABUN_GIT_PACK_DIR:-dist/release}"
-mkdir -p "$OUT_DIR"
+if ! ensure_writable_dir "$OUT_DIR"; then
+  if [[ -n "${RABUN_GIT_PACK_DIR:-}" ]]; then
+    echo "cannot write to RABUN_GIT_PACK_DIR=${OUT_DIR}" >&2
+    exit 1
+  fi
+  echo "warning: ${OUT_DIR} is not writable (often owned by root after a sudo pack)." >&2
+  echo "warning: sudo chown -R \"\$USER:\$USER\" dist" >&2
+  OUT_DIR="${TMPDIR:-/tmp}/rabun-git-pack"
+  echo "warning: packing in ${OUT_DIR} instead" >&2
+  if ! ensure_writable_dir "$OUT_DIR"; then
+    echo "cannot write to ${OUT_DIR}" >&2
+    exit 1
+  fi
+fi
 OUT_DIR="$(cd "$OUT_DIR" && pwd)"
 ARCHIVE="${OUT_DIR}/rabun-git-${TAG}-${TRIPLE}.tar.gz"
 
@@ -111,7 +133,7 @@ PROFILE=release
 EOF
 
 echo "creating ${ARCHIVE}"
-TMP_ARCHIVE="${ARCHIVE}.tmp"
+TMP_ARCHIVE="$(mktemp "${TMPDIR:-/tmp}/rabun-git-pack.XXXXXX.tar.gz")"
 tar -C "$STAGE" -czf "$TMP_ARCHIVE" .
 mv "$TMP_ARCHIVE" "$ARCHIVE"
 (cd "$OUT_DIR" && sha256sum "$(basename "$ARCHIVE")" >"$(basename "$ARCHIVE").sha256")

@@ -101,8 +101,9 @@ echo "  unit: systemctl status rabun-git"
 echo "  env file: /etc/rabun-git/rabun-git.env"
 echo "  forge root: /var/lib/rabun-git"
 echo "  git SSH: 0.0.0.0:2222 (open TCP 2222 on the firewall)"
-echo "  admin user: sudo -u rabun-git rabun-git user add NAME --admin"
-echo "  admin key:  sudo -u rabun-git rabun-git key add NAME --file KEY.pub"
+echo "  operator: rabun-git shell"
+echo "  admin user: rabun-git user add NAME --admin   # inside shell"
+echo "  admin key:  rabun-git key add NAME --file KEY.pub"
 if [[ -f /etc/rabun/rabun.toml ]]; then
   echo "  rabun apps: /etc/rabun/rabun.toml ([[apps]] name = \"git\")"
 fi

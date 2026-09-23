@@ -15,7 +15,19 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, and `serve` work only on the host, not over SSH.
+`init`, `check`, `status`, `serve`, and `shell` work only on the host, not over SSH.
+
+On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
+
+```bash
+rabun-git shell
+rabun-git user add ada --admin
+rabun-git key add ada --file /home/ada/.ssh/id_ed25519.pub
+rabun-git repo create ada/website
+exit
+```
+
+After the first admin key, `ssh -p 2222 git@HOST repo create ada/website` needs no sudo.
 
 ## Host / operator
 
@@ -25,6 +37,7 @@ ssh -p 2222 git@git.example.com repo list
 | `rabun-git check` | Data root writable, `git` on PATH, SSH bind, admin with a key |
 | `rabun-git status` | Companion JSON (`rabun.companion/v1`), no keys |
 | `rabun-git serve [--bind HOST:PORT]` | Listen for git + management commands |
+| `rabun-git shell` | One sudo, then bash as the systemd user (`exit` to leave) |
 
 ## Users and keys
 

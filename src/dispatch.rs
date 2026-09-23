@@ -21,7 +21,11 @@ pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<
         Commands::Request { command } => request_cmd(store, actor, command).await,
         Commands::Run { command } => run_cmd(store, actor, command),
         Commands::Hook { command } => hook_cmd(command),
-        Commands::Init | Commands::Check | Commands::Status | Commands::Serve { .. } => {
+        Commands::Init
+        | Commands::Check
+        | Commands::Status
+        | Commands::Serve { .. }
+        | Commands::Shell => {
             bail!("command is not available here")
         }
     }
