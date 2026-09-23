@@ -20,7 +20,7 @@ On Debian/Ubuntu you can install the C compiler and git with the repo script:
 ## Build from a clone
 
 ```bash
-git clone https://github.com/Burton-Workspaces/rabun-git.git
+git clone https://github.com/rconnelly/rgit.git
 cd rabun-git
 ./scripts/install.sh
 ```

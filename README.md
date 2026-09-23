@@ -1,6 +1,6 @@
 # Rabun Git
 
-[![CI](https://github.com/rconnelly/rabun-git/actions/workflows/ci.yml/badge.svg)](https://github.com/rconnelly/rabun-git/actions/workflows/ci.yml)
+[![CI](https://github.com/rconnelly/rgit/actions/workflows/ci.yml/badge.svg)](https://github.com/rconnelly/rgit/actions/workflows/ci.yml)
 
 Self-hosted **git forge CLI**: bare repositories over SSH, CLI merge requests, and a small in-repo YAML workflow runner. No public web UI on the forge host. No GitHub.com.
 

@@ -19,7 +19,7 @@ ENV_FILE=""
 PACK=0
 IDENTITY="${RABUN_GIT_SSH_IDENTITY:-}"
 SSH_PORT="${RABUN_GIT_SSH_PORT:-22}"
-REPO="${RABUN_GIT_REPO:-Burton-Workspaces/rabun-git}"
+REPO="${RABUN_GIT_REPO:-rconnelly/rgit}"
 
 usage() {
   echo "usage: $0 [--bootstrap] [--archive FILE] [--env FILE] [--pack] [--identity FILE] [--port N] user@host [tag]" >&2

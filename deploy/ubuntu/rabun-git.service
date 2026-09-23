@@ -1,6 +1,6 @@
 [Unit]
 Description=Rabun git forge
-Documentation=https://github.com/Burton-Workspaces/rabun-git
+Documentation=https://github.com/rconnelly/rgit
 After=network-online.target
 Wants=network-online.target
 
