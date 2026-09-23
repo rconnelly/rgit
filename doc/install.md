@@ -22,12 +22,10 @@ On Debian/Ubuntu you can install the C compiler and git with the repo script:
 ```bash
 git clone https://github.com/Burton-Workspaces/rabun-git.git
 cd rabun-git
-cargo install --path . --locked
-./scripts/link-rgit.sh
-rgit --version
+./scripts/install.sh
 ```
 
-That puts `rabun-git` in `~/.cargo/bin` and a `rgit` symlink beside it. Confirm either name:
+That runs `cargo install --path . --locked` and `./scripts/link-rgit.sh`. It puts `rabun-git` in `~/.cargo/bin` and a `rgit` symlink beside it. Confirm either name:
 
 ```bash
 rgit --version

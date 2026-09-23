@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rabun-git shell` opens an operator bash as the systemd user so `user` / `repo` / `key` do not need `sudo -u` on each command (prompt `(rabun-git)`)
 - Local client: `rgit remote add origin git@HOST` then `rgit origin …` for forge commands (`key add --file` reads a path on this machine; `repo list --user` lists that user’s remotes)
 - `rgit` is the official short command: a symlink beside `rabun-git` (Ubuntu install and `scripts/link-rgit.sh`); help text follows argv0; a foreign `rgit` is not overwritten
+- `./scripts/install.sh` installs from this checkout (`cargo install --path . --locked`) and links `rgit`
 
 ## [0.1.0]
 

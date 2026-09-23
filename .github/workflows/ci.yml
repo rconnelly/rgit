@@ -32,7 +32,7 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Deploy scripts
         run: |
-          bash -n deploy/ubuntu/pack.sh deploy/ubuntu/push.sh deploy/ubuntu/bootstrap.sh deploy/ubuntu/install.sh deploy/ubuntu/register-app.sh scripts/link-rgit.sh scripts/install-linux-build-deps.sh
+          bash -n deploy/ubuntu/pack.sh deploy/ubuntu/push.sh deploy/ubuntu/bootstrap.sh deploy/ubuntu/install.sh deploy/ubuntu/register-app.sh scripts/install.sh scripts/link-rgit.sh scripts/install-linux-build-deps.sh
       - name: Clippy
         run: cargo clippy --all-targets --locked -- -D warnings
       - name: Rustdoc

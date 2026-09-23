@@ -30,7 +30,7 @@ if [[ -z "$dir" ]]; then
   elif [[ -x "${HOME}/.cargo/bin/rabun-git" ]]; then
     dir="${HOME}/.cargo/bin"
   else
-    echo "rabun-git not found; install with: cargo install --path . --locked" >&2
+    echo "rabun-git not found; install with: ./scripts/install.sh" >&2
     exit 1
   fi
 fi

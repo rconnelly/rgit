@@ -44,8 +44,7 @@ On-disk layout, ACL internals, systemd: [doc/architecture.md](doc/architecture.m
 
 ```bash
 # From a clone (needs a C compiler and git)
-cargo install --path . --locked
-./scripts/link-rgit.sh
+./scripts/install.sh
 ```
 
 Details: [doc/install.md](doc/install.md).
