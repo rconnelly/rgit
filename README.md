@@ -4,6 +4,8 @@
 
 Self-hosted **git forge CLI**: bare repositories over SSH, CLI merge requests, and a small in-repo YAML workflow runner. No public web UI on the forge host. No GitHub.com.
 
+It's a complete rewrite of MoriGM's rgit. [MoriGM/rgit](https://github.com/MoriGM/rgit)
+
 Browse a local clone (or a bare repo on the host) with `rgit view` — a loopback Zola preview, not HTTP on `serve`.
 
 If you already use `git clone` / `git push`, you can run this on a server you own and point `origin` at it.
