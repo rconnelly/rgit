@@ -1,22 +1,24 @@
 # Command reference
 
+`rgit` and `rabun-git` are the same program. Examples below use `rgit`. Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`.
+
 Global flags (all commands):
 
 ```bash
-rabun-git --config /path/to/rabun-git.toml …
+rgit --config /path/to/rabun-git.toml …
 # or: export RABUN_GIT_CONFIG=/path/to/rabun-git.toml
-rabun-git --identity ~/.ssh/id_ed25519 origin repo list
+rgit --identity ~/.ssh/id_ed25519 origin repo list
 # or: export RABUN_GIT_SSH_IDENTITY=~/.ssh/id_ed25519
 ```
 
-`rabun-git --version` prints the crate version.
+`rgit --version` prints the crate version.
 
 On a laptop, save a forge host once, then use that name as the first word (this is a **forge** alias, not a git remote):
 
 ```bash
-rabun-git remote add origin git@git.example.com
-rabun-git origin repo list
-rabun-git origin key add ada --file ~/.ssh/id_ed25519.pub
+rgit remote add origin git@git.example.com
+rgit origin repo list
+rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```
 
 Names live in `~/.config/rabun-git/remotes.toml` (`RABUN_GIT_REMOTES` overrides the path). They cannot collide with clap commands (`repo`, `user`, `key`, …).

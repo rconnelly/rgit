@@ -60,9 +60,38 @@ if [[ -z "$BIN" ]]; then
   exit 1
 fi
 
+# Relative symlink `rgit` -> `rabun-git`. Skip if a foreign `rgit` is already there.
+link_rgit_nickname() {
+  local dir="$1"
+  local long="${dir}/rabun-git"
+  local short="${dir}/rgit"
+  if [[ ! -x "$long" ]]; then
+    echo "skip rgit symlink: ${long} is not executable" >&2
+    return 0
+  fi
+  if [[ -L "$short" ]]; then
+    local target
+    target="$(readlink "$short")"
+    if [[ "$(basename "$target")" == "rabun-git" ]]; then
+      ln -sfn rabun-git "$short"
+      echo "rgit -> rabun-git (${short})"
+      return 0
+    fi
+    echo "skip rgit symlink: ${short} exists and is not a symlink to rabun-git (got ${target})" >&2
+    return 0
+  fi
+  if [[ -e "$short" ]]; then
+    echo "skip rgit symlink: ${short} exists and is not a symlink to rabun-git" >&2
+    return 0
+  fi
+  ln -sfn rabun-git "$short"
+  echo "rgit -> rabun-git (${short})"
+}
+
 install -d "${PREFIX}/bin"
 install -m 0755 "$BIN" "${PREFIX}/bin/rabun-git"
 "${PREFIX}/bin/rabun-git" --version
+link_rgit_nickname "${PREFIX}/bin"
 
 install_env_file "$ENV_FILE"
 

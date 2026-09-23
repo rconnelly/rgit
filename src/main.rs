@@ -6,10 +6,9 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 
 use anyhow::{bail, Context, Result};
-use clap::Parser;
 
 use rabun_git::acl::Actor;
-use rabun_git::cli::{Cli, Commands};
+use rabun_git::cli::Commands;
 use rabun_git::config::Config;
 use rabun_git::remote;
 use rabun_git::store::Store;
@@ -43,7 +42,7 @@ async fn run() -> Result<()> {
     if let Some(invoke) = remote::detect_invoke()? {
         return run_named_remote(invoke);
     }
-    let cli = Cli::parse();
+    let cli = rabun_git::cli::parse();
     if matches!(cli.command, Commands::Shell) {
         return run_operator_shell();
     }
@@ -92,9 +91,9 @@ async fn run() -> Result<()> {
 
 /// `rabun-git origin …` — SSH to a saved forge host.
 fn run_named_remote(invoke: remote::ClientInvoke) -> Result<()> {
-    let mut parse_from = vec!["rabun-git".to_string()];
+    let mut parse_from = vec![rabun_git::cli::invoked_name()];
     parse_from.extend(invoke.args.iter().cloned());
-    let cli = Cli::parse_from(&parse_from);
+    let cli = rabun_git::cli::parse_from(&parse_from);
     if cli.command.ssh_forbidden() {
         bail!("run this on the forge host, not through `{}`", invoke.name);
     }

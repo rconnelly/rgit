@@ -2,6 +2,8 @@
 
 Install the `rabun-git` command on the **server** (the machine that will host repositories). You can also install it on a laptop if you want the same CLI locally; laptops only need `git` and SSH to clone and push.
 
+`rgit` and `rabun-git` are the same program. `rgit` is the short command (a symlink). Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`. If another `rgit` is already on `PATH` (some recursive-git wrappers use that name), the linker leaves it alone.
+
 ## What you need
 
 - [Git](https://git-scm.com/) on `PATH` (`git --version`)
@@ -21,11 +23,14 @@ On Debian/Ubuntu you can install the C compiler and git with the repo script:
 git clone https://github.com/Burton-Workspaces/rabun-git.git
 cd rabun-git
 cargo install --path . --locked
+./scripts/link-rgit.sh
+rgit --version
 ```
 
-That puts `rabun-git` in `~/.cargo/bin`. Confirm:
+That puts `rabun-git` in `~/.cargo/bin` and a `rgit` symlink beside it. Confirm either name:
 
 ```bash
+rgit --version
 rabun-git --version
 ```
 

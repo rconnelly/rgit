@@ -10,15 +10,17 @@ If you already use `git clone` / `git push`, you can run this on a server you ow
 git remote add origin ssh://git@HOST:2222/owner/name.git
 ```
 
+`rgit` and `rabun-git` are the same program. `rgit` is the short command; crate path, env (`RABUN_GIT_*`), and systemd stay `rabun-git`.
+
 Forge admin from a laptop (users, keys, repos — not `git push`):
 
 ```bash
-rabun-git remote add origin git@HOST
-rabun-git origin repo list
-rabun-git origin key add ada --file ~/.ssh/id_ed25519.pub
+rgit remote add origin git@HOST
+rgit origin repo list
+rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```
 
-Versions follow [Semantic Versioning](https://semver.org/). `rabun-git --version` reports the crate version baked in at build time.
+Versions follow [Semantic Versioning](https://semver.org/). `rgit --version` reports the crate version baked in at build time.
 
 ## User guide
 
@@ -27,7 +29,7 @@ The guide is written for people who know basic git (commits, branches, remotes) 
 | Section | What you will do |
 | --- | --- |
 | [What Rabun Git is](doc/what-it-is.md) | Map GitHub-style hosting onto this CLI |
-| [Install](doc/install.md) | Build `rabun-git` with Cargo |
+| [Install](doc/install.md) | Build `rabun-git` and link `rgit` |
 | [Start the forge](doc/start-the-forge.md) | `init`, first admin user, SSH key, `serve` |
 | [Set up a remote repository](doc/remote-repository.md) | Create `owner/name`, add `origin`, first push or clone |
 | [Users and roles](doc/users-and-roles.md) | Create users, attach keys, grant and revoke `read` / `write` / `admin` |
@@ -43,6 +45,7 @@ On-disk layout, ACL internals, systemd: [doc/architecture.md](doc/architecture.m
 ```bash
 # From a clone (needs a C compiler and git)
 cargo install --path . --locked
+./scripts/link-rgit.sh
 ```
 
 Details: [doc/install.md](doc/install.md).

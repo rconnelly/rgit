@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use clap::{ArgGroup, Parser, Subcommand};
+use clap::{ArgGroup, CommandFactory, FromArgMatches, Parser, Subcommand};
 
 use crate::acl::Role;
 use crate::names::RepoName;
@@ -10,7 +10,6 @@ use crate::names::RepoName;
 /// Self-hosted git forge: SSH remotes, merge requests, YAML workflows.
 #[derive(Parser)]
 #[command(
-    name = "rabun-git",
     version,
     about = "Self-hosted git forge: SSH remotes, merge requests, YAML workflows"
 )]
@@ -23,6 +22,46 @@ pub struct Cli {
     pub identity: Option<PathBuf>,
     #[command(subcommand)]
     pub command: Commands,
+}
+
+/// Basename used in clap help (`rgit` or `rabun-git`).
+pub fn invoked_name() -> String {
+    std::env::args_os()
+        .next()
+        .as_ref()
+        .map(std::path::Path::new)
+        .and_then(|path| path.file_name())
+        .and_then(|name| name.to_str())
+        .filter(|name| *name == "rgit" || *name == "rabun-git")
+        .unwrap_or("rabun-git")
+        .to_string()
+}
+
+/// Parse argv using the invoked basename so `rgit --help` says `Usage: rgit`.
+pub fn parse() -> Cli {
+    parse_from(std::env::args_os())
+}
+
+/// Parse an explicit argv (first element is the program name).
+pub fn parse_from<I, T>(itr: I) -> Cli
+where
+    I: IntoIterator<Item = T>,
+    T: Into<std::ffi::OsString> + Clone,
+{
+    let args: Vec<std::ffi::OsString> = itr.into_iter().map(Into::into).collect();
+    let name = match args.first().and_then(|arg| {
+        std::path::Path::new(arg)
+            .file_name()
+            .and_then(|name| name.to_str())
+    }) {
+        Some("rgit") => "rgit",
+        _ => "rabun-git",
+    };
+    let cmd = Cli::command().name(name);
+    let matches = cmd
+        .try_get_matches_from(args)
+        .unwrap_or_else(|err| err.exit());
+    Cli::from_arg_matches(&matches).unwrap_or_else(|err| err.exit())
 }
 
 /// Top-level subcommands.
@@ -343,5 +382,17 @@ mod tests {
             command: RemoteCommands::List
         }
         .requires_service_uid());
+    }
+
+    #[test]
+    fn help_follows_argv0() {
+        let mut rgit = Cli::command().name("rgit");
+        assert_eq!(rgit.get_name(), "rgit");
+        assert!(rgit.render_long_help().to_string().contains("Usage: rgit"));
+        let mut long = Cli::command().name("rabun-git");
+        assert!(long
+            .render_long_help()
+            .to_string()
+            .contains("Usage: rabun-git"));
     }
 }

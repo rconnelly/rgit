@@ -81,6 +81,7 @@ Refresh the env file without rewriting the example:
 | Path | Role |
 | --- | --- |
 | `/usr/local/bin/rabun-git` | released binary |
+| `/usr/local/bin/rgit` | symlink to `rabun-git` (skipped if a foreign `rgit` already exists) |
 | `/etc/rabun-git/rabun-git.env` | `RABUN_GIT_ROOT`, optional bind overrides |
 | `/etc/rabun-git/rabun-git.toml` | env var names (not tokens) |
 | `/var/lib/rabun-git` | forge root (`users.yaml`, `keys/`, `repos/`, `runs/`) |
