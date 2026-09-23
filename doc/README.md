@@ -8,13 +8,14 @@ If you know `git clone`, `git commit`, and `git push`, start at the top and foll
 
 1. [What Rabun Git is](what-it-is.md) — how this compares to GitHub and a plain git remote
 2. [Install](install.md) — build the `rabun-git` command
-3. [Start the forge](start-the-forge.md) — `init`, first admin, SSH key, `serve`
+3. [Start the forge](start-the-forge.md) — pack-and-push or manual `init` / `serve`, then first admin and key
 4. [Set up a remote repository](remote-repository.md) — create `owner/name`, add `origin`, first push or clone
 5. [Users and roles](users-and-roles.md) — add people, register keys, grant and revoke `read` / `write` / `admin`
 6. [Everyday git](everyday-git.md) — clone, branches, protected `main` / `master`
 7. [Merge requests](merge-requests.md) — propose, review, fast-forward merge
 8. [CI workflows](ci-workflows.md) — `.rabun/workflows` on push, tag, and request
 9. [Command reference](commands.md) — CLI and SSH cheat sheet
+10. [Compared to GitHub](compared-to-github.md) — feature and `gh` command gap analysis
 
 Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md).
 

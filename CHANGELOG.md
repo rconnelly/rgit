@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Beginner user guide under `doc/` (summary, remotes, users and roles, everyday git, merge requests, CI)
+- GitHub gap analysis (`doc/compared-to-github.md`): feature tables and `gh` → `rgit` command map
 - Pack-and-push from a checkout (`deploy/ubuntu/pack.sh`, `push.sh --pack`) for Ubuntu hosts, including `/etc/rabun-git/rabun-git.env` (`--env`) and Rabun `[[apps]]` housekeeping
 - `push.sh` uses SSH publickey only (`--identity` optional) and skips sudo when the remote user is already root or has passwordless sudo
 - `pack.sh` refuses a root-owned `dist/release` (or packs under `/tmp`) instead of failing mid-tarball after `sudo pack`

@@ -30,13 +30,14 @@ The guide is written for people who know basic git (commits, branches, remotes) 
 | --- | --- |
 | [What Rabun Git is](doc/what-it-is.md) | Map GitHub-style hosting onto this CLI |
 | [Install](doc/install.md) | Build `rabun-git` and link `rgit` |
-| [Start the forge](doc/start-the-forge.md) | `init`, first admin user, SSH key, `serve` |
+| [Start the forge](doc/start-the-forge.md) | Pack-and-push or manual `init` / `serve`, then first admin and key |
 | [Set up a remote repository](doc/remote-repository.md) | Create `owner/name`, add `origin`, first push or clone |
 | [Users and roles](doc/users-and-roles.md) | Create users, attach keys, grant and revoke `read` / `write` / `admin` |
 | [Everyday git](doc/everyday-git.md) | Clone, branch, and protected `main` / `master` |
 | [Merge requests](doc/merge-requests.md) | Open, review, and fast-forward merge |
 | [CI workflows](doc/ci-workflows.md) | `.rabun/workflows` on push, tag, and request |
 | [Command reference](doc/commands.md) | Every CLI and SSH command |
+| [Compared to GitHub](doc/compared-to-github.md) | Feature and `gh` command gap analysis |
 
 On-disk layout, ACL internals, systemd: [doc/architecture.md](doc/architecture.md). Ubuntu pack/push: [doc/deploy-ubuntu.md](doc/deploy-ubuntu.md).
 

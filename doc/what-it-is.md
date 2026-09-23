@@ -42,4 +42,6 @@ Allowed characters: letters, digits, `.`, `_`, `-`. Names cannot start with `.`.
 - Merge is **fast-forward only** (the branch you merge must already contain the target branch)
 - `master` and `main` are **protected**: only a repo or forge **admin** can push them directly. Everyone else opens a merge request.
 
+Full tables (`gh` commands, GitHub products with no counterpart): [Compared to GitHub](compared-to-github.md).
+
 Next: [Install](install.md).
