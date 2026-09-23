@@ -37,7 +37,7 @@ SSH is the only public network surface (default `0.0.0.0:2222`; russh username `
 - `read`: fetch, list requests/runs.
 - `write`: push non-protected branches, open/review requests.
 - `admin` (repo or forge): push `master`/`main`, merge, grant access.
-- `hooks/update` rejects protected-branch updates for non-admins. Env: `RABUN_GIT_USER`, `RABUN_GIT_REPO`, `RABUN_GIT_ROOT`, `RABUN_GIT_BIN`. If the new tip contains `.rabun/version.toml` with `enforce` flags, it also rejects non-conventional commits and non-SemVer tags (see [versioning](versioning.md)).
+- `hooks/update` rejects protected-branch updates for non-admins. Env: `RABUN_GIT_USER`, `RABUN_GIT_REPO`, `RABUN_GIT_ROOT`, `RABUN_GIT_BIN`. If the new tip contains `.rabun/version.toml` with `enforce` flags, it also rejects non-conventional commits and non-SemVer tags. Set those flags to `false` to disable (see [versioning](versioning.md)).
 
 ## Merge requests
 

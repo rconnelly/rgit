@@ -52,7 +52,7 @@ git add README.md
 git commit -m "docs: explain the setup"
 ```
 
-Write a Conventional Commits 1.0.0 subject (`feat:`, `fix:`, `docs:`, …). `rgit version hook install` checks that on this machine; a repo with `.rabun/version.toml` `enforce.commits` also checks on push. Details: [Versioning](versioning.md).
+Write a Conventional Commits 1.0.0 subject (`feat:`, `fix:`, `docs:`, …). That is the default. `rgit version hook install` checks it on this machine; `.rabun/version.toml` with `enforce.commits` also checks on push. To allow any message, set `commits = false` (or omit the file). Details: [Versioning](versioning.md).
 
 To cut a release (bump version files, `CHANGELOG.md`, commit, tag) without pushing:
 
@@ -112,7 +112,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Need **write**. If the repo has `.rabun/version.toml` with `enforce.tags`, the name must be SemVer 2.0 with the configured prefix. Tag pushes can start [CI workflows](ci-workflows.md) if a workflow file has `on: tag:`.
+Need **write**. SemVer 2.0 tags (`vMAJOR.MINOR.PATCH`) are the default when `enforce.tags` is on. Set `tags = false` to allow any tag name. Tag pushes can start [CI workflows](ci-workflows.md) if a workflow file has `on: tag:`.
 
 ## SSH management without git
 

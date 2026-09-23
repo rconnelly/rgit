@@ -3,7 +3,7 @@
 [![CI](https://github.com/rconnelly/rgit/actions/workflows/ci.yml/badge.svg)](https://github.com/rconnelly/rgit/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/rconnelly/rgit?sort=semver)](https://github.com/rconnelly/rgit/releases)
 
-Self-hosted **git forge CLI**: bare repositories over SSH, CLI merge requests, and a small in-repo YAML workflow runner. No public web UI on the forge host. No GitHub.com.
+Rgit is Git with etiquette. Self-hosted **git forge CLI**: bare repositories over SSH, Conventional Commits and SemVer 2.0 by default ([how to disable](doc/versioning.md#disable-etiquette)), CLI merge requests, and a small in-repo YAML workflow runner. No public web UI on the forge host. No GitHub.com.
 
 It's a complete rewrite of MoriGM's rgit. [MoriGM/rgit](https://github.com/MoriGM/rgit)
 

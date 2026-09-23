@@ -1,6 +1,6 @@
 # Versioning
 
-Rabun Git can bump versions, write `CHANGELOG.md`, and enforce [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) plus [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) on the clone and on the forge.
+Rgit is Git with etiquette. [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) and [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) are the default: `rgit version` infers bumps from those commits, rewrites version files and `CHANGELOG.md`, and the forge can reject a push that breaks the rules.
 
 Policy lives in the repo as `.rabun/version.toml`, next to [CI workflows](ci-workflows.md). A release is one commit that updates every version file and the changelog; the annotated tag name must match those files.
 
@@ -55,9 +55,9 @@ Pass `patch`, `minor`, `major`, or `--to 1.2.3` to skip inference.
 
 If two source files disagree, `show` / `bump` / `release` stop with an error.
 
-## Policy file
+## Policy file (default: on)
 
-Commit this to enable forge-side checks and to name the changelog:
+Commit this as `.rabun/version.toml`. That is the default this guide assumes — conventional messages, SemVer 2.0 tag names (`v1.2.3`), and version files that match the tag:
 
 ```toml
 [version]
@@ -70,7 +70,7 @@ tags = true
 manifests = true
 ```
 
-Without the file, local `show` / `bump` / `release` still work. The forge does **not** reject ordinary commit messages or tags until you push a tree that contains this file with `enforce` flags on.
+`rgit version show`, `bump`, and `release` still work with no file. They always treat Conventional Commits as the bump schema and SemVer 2.0 as the version format. The forge gates run when this file is in the tree with `enforce` flags on.
 
 | Flag | Gate |
 | --- | --- |
@@ -78,7 +78,22 @@ Without the file, local `show` / `bump` / `release` still work. The forge does *
 | `tags` | Tag names must be `{tag_prefix}` plus SemVer 2.0 (`v1.2.3`) |
 | `manifests` | The tagged commit's version files must equal that SemVer (no `v` in the files) |
 
-`git commit --no-verify` skips the local hook. It cannot skip the forge `hooks/update` check.
+## Disable etiquette
+
+Turn the forge gates off without deleting the rest of the file:
+
+```toml
+[version.enforce]
+commits = false
+tags = false
+manifests = false
+```
+
+You can set only one flag to `false` (for example keep SemVer tags, allow any commit message). Omitting `.rabun/version.toml` has the same effect as all flags off: the forge will not reject ordinary commit messages or tags.
+
+Skip `rgit version hook install` if you do not want a local `commit-msg` check. `git commit --no-verify` skips that hook. It cannot skip the forge `hooks/update` check while `enforce` is on.
+
+Pass `patch`, `minor`, `major`, or `--to 1.2.3` to `rgit version bump` / `release` if you want a SemVer bump that does not follow the commits.
 
 ## Local hook vs forge gate
 

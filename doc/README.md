@@ -1,6 +1,6 @@
 # User guide
 
-Rabun Git is a git forge you run on a machine you own: SSH remotes, users and roles, merge requests, and a small CI runner. There is no website on the forge host. To read a tree in a browser, use [`rgit view`](everyday-git.md#browse-locally) on this machine.
+Rgit is Git with etiquette. Rabun Git is a git forge you run on a machine you own: SSH remotes, users and roles, merge requests, a small CI runner, and Conventional Commits / SemVer 2.0 by default ([how to turn that off](versioning.md#disable-etiquette)). There is no website on the forge host. To read a tree in a browser, use [`rgit view`](everyday-git.md#browse-locally) on this machine.
 
 If you know `git clone`, `git commit`, and `git push`, start at the top and follow the pages in order. Each page has copy-paste examples (`git.example.com`, user `ada`, repo `ada/website`).
 

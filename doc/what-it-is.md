@@ -1,6 +1,6 @@
 # What is Rabun Git?
 
-Rabun Git is a **git forge you run yourself**. Teammates use ordinary `git clone` / `git push` over SSH. You manage people, keys, and permissions from the command line. Nothing is sent to GitHub.com. The forge host does not serve a git website; `rgit view` on this machine can preview a local tree in a browser.
+Rgit is Git with etiquette. Rabun Git is a **git forge you run yourself**. [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and [SemVer 2.0](https://semver.org/spec/v2.0.0.html) are the default. Teammates use ordinary `git clone` / `git push` over SSH. You manage people, keys, and permissions from the command line. Nothing is sent to GitHub.com. The forge host does not serve a git website; `rgit view` on this machine can preview a local tree in a browser.
 
 This guide assumes you already know a little git: commits, branches, and that a **remote** is another copy of a repository you can push to and fetch from.
 
@@ -15,6 +15,7 @@ On this machine you have a **working copy** (files you edit). GitHub, GitLab, an
 | Repo permissions (read / write / admin) | `rabun-git access grant` |
 | Pull requests | Merge **requests** (`rabun-git request` or a special push ref) |
 | GitHub Actions | Small YAML files in `.rabun/workflows/` (shell steps only) |
+| Releases / Conventional Commits | `rgit version` (SemVer 2.0 by default; [turn gates off](versioning.md#disable-etiquette)) |
 
 The git protocol is the same. The host, port, and how you log in are different.
 

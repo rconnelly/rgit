@@ -1,6 +1,6 @@
 # Compared to GitHub
 
-rgit covers the git-hosting core: remotes, users and keys, path ACL, fast-forward merge requests, and in-repo shell CI. It is not a GitHub clone. There is no website on the forge host, and most GitHub products have no counterpart.
+rgit covers the git-hosting core: remotes, users and keys, path ACL, fast-forward merge requests, in-repo shell CI, and SemVer 2.0 / Conventional Commits by default. It is not a GitHub clone. There is no website on the forge host, and most GitHub products have no counterpart.
 
 `rgit` and `rabun-git` are the same program. Examples use `rgit` after `rgit remote add origin git@HOST`.
 
@@ -73,6 +73,6 @@ These run the forge. They are not GitHub product analogues:
 
 ## Practical takeaway
 
-rgit is enough if you want private SSH remotes, simple ACL, fast-forward merge requests, and a few `sh -c` jobs on one box. Anything people do in the GitHub website (except a local `rgit view` of a tree you already have), or with tokens, orgs, issues, or the Actions marketplace, is a gap by design.
+rgit is enough if you want private SSH remotes, simple ACL, fast-forward merge requests, Conventional Commits / SemVer 2.0 (or [those gates off](versioning.md#disable-etiquette)), and a few `sh -c` jobs on one box. Anything people do in the GitHub website (except a local `rgit view` of a tree you already have), or with tokens, orgs, issues, or the Actions marketplace, is a gap by design.
 
 Next: [Install](install.md), or the [command reference](commands.md).
