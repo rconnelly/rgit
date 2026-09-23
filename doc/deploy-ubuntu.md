@@ -78,7 +78,7 @@ Two-step (inspect the archive first):
 ./deploy/ubuntu/push.sh --archive dist/release/rabun-git-<git-describe>-x86_64-unknown-linux-gnu.tar.gz user@HOST
 ```
 
-GitHub Release deploys: omit `--pack` and `push.sh` downloads the latest **stable** (non-prerelease) tarball, or a tag you pass (`v0.12.0`). Tags follow SemVer 2.0.0 with a `v` prefix and must match `Cargo.toml`. Pushing `vX.Y.Z` on GitHub runs the Release workflow, which attaches `rabun-git-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`. `--pack` and `--archive` cannot be used together.
+GitHub Release deploys: omit `--pack` and `push.sh` downloads the latest **stable** (non-prerelease) tarball, or a tag you pass (`v0.12.1`). Tags follow SemVer 2.0.0 with a `v` prefix and must match `Cargo.toml`. Pushing `vX.Y.Z` on GitHub runs the Release workflow, which attaches `rabun-git-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`. `--pack` and `--archive` cannot be used together.
 
 Refresh the env file without rewriting the example:
 

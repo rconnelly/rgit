@@ -26,7 +26,7 @@ rgit origin repo list
 rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```
 
-Versions follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html). `Cargo.toml` is `MAJOR.MINOR.PATCH` (optional pre-release and build metadata). Git tags are `v` plus that version (`v0.12.0`) and must match. `rgit --version` reports the crate version baked in at build time. Pushing a matching tag publishes Linux archives on [GitHub Releases](https://github.com/rconnelly/rgit/releases).
+Versions follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html). `Cargo.toml` is `MAJOR.MINOR.PATCH` (optional pre-release and build metadata). Git tags are `v` plus that version (`v0.12.1`) and must match. `rgit --version` reports the crate version baked in at build time. Pushing a matching tag publishes Linux archives on [GitHub Releases](https://github.com/rconnelly/rgit/releases).
 
 ## User guide
 

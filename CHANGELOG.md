@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
-### Added
+## [0.12.1] - 2026-09-23
 
-- GitHub Actions release workflow: a SemVer 2.0.0 tag (`vMAJOR.MINOR.PATCH`) publishes Linux archives to GitHub Releases
+### Fixed
+
+- GitHub Release tags must match `Cargo.toml` (`v0.12.1`). The `v0.12.1` tag on `0.12.0` failed the SemVer check.
+- `rgit view` points at the Zola install docs only (no rsites hint).
 
 ## [0.12.0] - 2026-09-23
 
@@ -27,6 +30,7 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 - `./scripts/install.sh` installs from this checkout (`cargo install --path . --locked`) and links `rgit`
 - Workflow `runs-on:` fans out to linux / macos / windows; registered `rgit agent` builders poll over SSH and claim queued jobs (`builders.yaml`)
 - `rgit view` renders a local git tree as a loopback Zola + DevLab preview (README, file tree, blobs). Not an HTTP UI on `serve`.
+- GitHub Actions release workflow: a SemVer 2.0.0 tag (`vMAJOR.MINOR.PATCH`) publishes Linux archives to GitHub Releases
 
 ## [0.1.0]
 
@@ -37,6 +41,7 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 - In-repo YAML workflows (`.rabun/workflows`) on push, tag, and request
 - Companion heartbeat (`rabun.companion/v1`): `status.json`, `rabun-git status`, loopback `GET /health`
 
-[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/rconnelly/rgit/releases/tag/v0.12.1
 [0.12.0]: https://github.com/rconnelly/rgit/releases/tag/v0.12.0
 [0.1.0]: https://github.com/rconnelly/rgit/releases/tag/v0.1.0

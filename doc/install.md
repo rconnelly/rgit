@@ -51,10 +51,10 @@ From a [GitHub Release](https://github.com/rconnelly/rgit/releases) (latest stab
 
 ```bash
 ./deploy/ubuntu/push.sh --bootstrap user@HOST
-./deploy/ubuntu/push.sh --bootstrap user@HOST v0.12.0
+./deploy/ubuntu/push.sh --bootstrap user@HOST v0.12.1
 ```
 
-Release tags are SemVer 2.0.0 with a `v` prefix and must match `Cargo.toml` (`v0.12.0`). Pushing that tag on GitHub runs `.github/workflows/release.yml`, which packs `rabun-git-<tag>-x86_64-unknown-linux-gnu.tar.gz` and attaches it to the release.
+Release tags are SemVer 2.0.0 with a `v` prefix and must match `Cargo.toml` (`v0.12.1`). Pushing that tag on GitHub runs `.github/workflows/release.yml`, which packs `rabun-git-<tag>-x86_64-unknown-linux-gnu.tar.gz` and attaches it to the release.
 
 Layout, systemd, and first admin user: [deploy Ubuntu](deploy-ubuntu.md).
 
