@@ -5,20 +5,71 @@
   <header class="repo-header">
     <p class="repo-eyebrow">Repository</p>
     <h1>{{ section.extra.repo_name | default(value=section.title) }}</h1>
-    {% if section.extra.clone_url %}
-    <p class="repo-clone"><code>{{ section.extra.clone_url }}</code></p>
-    {% endif %}
-    {% if section.extra.commit_sha %}
-    <p class="repo-commit">
-      <code>{{ section.extra.commit_sha }}</code>
-      {{ section.extra.commit_subject }}
-      <span class="repo-commit-meta">{{ section.extra.commit_author }} · {{ section.extra.commit_date }}</span>
-    </p>
-    {% endif %}
-    <p class="repo-actions"><a href="{{ get_url(path='@/tree/_index.md') }}">Browse files</a></p>
+
+    <a class="repo-browse" href="{{ get_url(path='@/tree/_index.md') }}">
+      <span class="repo-browse-copy">
+        <span class="repo-browse-label">Browse files</span>
+        <span class="repo-browse-hint">Open the file tree</span>
+      </span>
+      <span class="repo-browse-path">/tree/</span>
+    </a>
+
+    <div class="repo-meta">
+      {% if section.extra.clone_url %}
+      {% set_global clone_scheme = "git" %}
+      {% if section.extra.clone_url is starting_with(pat="ssh://") %}
+      {% set_global clone_scheme = "ssh" %}
+      {% elif section.extra.clone_url is starting_with(pat="https://") %}
+      {% set_global clone_scheme = "https" %}
+      {% elif section.extra.clone_url is starting_with(pat="http://") %}
+      {% set_global clone_scheme = "http" %}
+      {% endif %}
+      <div class="repo-clone">
+        <p class="repo-meta-label" id="repo-clone-label">Clone</p>
+        <div
+          class="repo-url-box"
+          data-copy-url="{{ section.extra.clone_url }}"
+        >
+          <span class="repo-url-scheme">{{ clone_scheme }}</span>
+          <input
+            class="repo-url-field"
+            type="text"
+            readonly
+            spellcheck="false"
+            autocomplete="off"
+            aria-labelledby="repo-clone-label"
+            value="{{ section.extra.clone_url }}"
+            data-copy-url-field
+          >
+          <button
+            class="repo-url-copy"
+            type="button"
+            data-copy-url-button
+          >Copy</button>
+        </div>
+        <p class="repo-url-status" role="status" aria-live="polite" data-copy-url-status></p>
+      </div>
+      {% endif %}
+
+      {% if section.extra.commit_sha %}
+      <div class="repo-commit">
+        <p class="repo-meta-label">Latest commit</p>
+        <div class="repo-commit-card">
+          <code class="repo-commit-sha" title="Commit">{{ section.extra.commit_sha }}</code>
+          <div class="repo-commit-body">
+            <p class="repo-commit-subject">{{ section.extra.commit_subject }}</p>
+            <p class="repo-commit-meta">{{ section.extra.commit_author }} · {{ section.extra.commit_date }}</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
   </header>
-  <div class="content">
-    {{ section.content | safe }}
-  </div>
+
+  <section class="repo-readme" aria-label="README">
+    <div class="content">
+      {{ section.content | safe }}
+    </div>
+  </section>
 </article>
 {% endblock content %}

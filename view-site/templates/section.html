@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="repo-tree-page">
+  {% include "partials/repo-crumbs.html" %}
+
+  <header class="repo-tree-header">
+    <p class="repo-eyebrow">File tree</p>
+    <h1>{{ section.title }}</h1>
+    {% if section.path %}
+    <p class="repo-tree-path"><code>{{ section.path }}</code></p>
+    {% endif %}
+  </header>
+
+  {% if paginator is defined %}
+  {% set section_pages = paginator.pages %}
+  {% else %}
+  {% set section_pages = section.pages %}
+  {% endif %}
+
+  {% if section.subsections or section_pages %}
+  <nav class="repo-tree" aria-label="{{ section.title }} files">
+    {% for subsection_path in section.subsections %}
+    {% set subsection = get_section(path=subsection_path) %}
+    <a class="repo-tree-row" href="{{ subsection.permalink }}">
+      <span class="content-icon content-icon-sm repo-tree-icon" aria-hidden="true">{{<devlab.svg_icon name="folder" />}}</span>
+      <span class="repo-tree-name">{{ subsection.title }}/</span>
+      <span class="repo-tree-kind">directory</span>
+    </a>
+    {% endfor %}
+
+    {% for page in section_pages %}
+    <a class="repo-tree-row" href="{{ page.permalink }}">
+      <span class="content-icon content-icon-sm repo-tree-icon" aria-hidden="true">{{<devlab.svg_icon name="file" />}}</span>
+      <span class="repo-tree-name">{{ page.title }}</span>
+      <span class="repo-tree-kind">file</span>
+    </a>
+    {% endfor %}
+  </nav>
+  {% else %}
+  <p class="repo-tree-empty">This directory is empty.</p>
+  {% endif %}
+
+  {% include "partials/pagination.html" %}
+</article>
+{% endblock content %}

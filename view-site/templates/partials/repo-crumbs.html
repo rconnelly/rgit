@@ -1,0 +1,39 @@
+<nav class="repo-crumbs" aria-label="Breadcrumb">
+  <ol class="repo-crumbs-list">
+    <li class="repo-crumbs-item"><a href="{{ get_url(path='@/_index.md') }}">Home</a></li>
+    {%- set tree_href = get_url(path='@/tree/_index.md') -%}
+    {%- set_global tree_is_current = false -%}
+    {%- if section is defined -%}
+    {%- set_global tree_is_current = true -%}
+    {%- for ancestor_path in section.ancestors -%}
+    {%- if ancestor_path == "tree/_index.md" -%}
+    {%- set_global tree_is_current = false -%}
+    {%- endif -%}
+    {%- endfor -%}
+    {%- endif -%}
+    <li class="repo-crumbs-item"{% if tree_is_current %} aria-current="page"{% endif %}>
+      {%- if tree_is_current -%}
+      <span class="repo-path-chip">/tree/</span>
+      {%- else -%}
+      <a class="repo-path-chip" href="{{ tree_href }}">/tree/</a>
+      {%- endif -%}
+    </li>
+    {%- if page is defined -%}
+    {%- for ancestor_path in page.ancestors -%}
+    {%- if ancestor_path != "_index.md" and ancestor_path != "tree/_index.md" -%}
+    {%- set ancestor = get_section(path=ancestor_path) -%}
+    <li class="repo-crumbs-item"><a href="{{ ancestor.permalink }}">{{ ancestor.title }}</a></li>
+    {%- endif -%}
+    {%- endfor -%}
+    <li class="repo-crumbs-item" aria-current="page"><span>{{ page.title }}</span></li>
+    {%- elif section is defined and not tree_is_current -%}
+    {%- for ancestor_path in section.ancestors -%}
+    {%- if ancestor_path != "_index.md" and ancestor_path != "tree/_index.md" -%}
+    {%- set ancestor = get_section(path=ancestor_path) -%}
+    <li class="repo-crumbs-item"><a href="{{ ancestor.permalink }}">{{ ancestor.title }}</a></li>
+    {%- endif -%}
+    {%- endfor -%}
+    <li class="repo-crumbs-item" aria-current="page"><span>{{ section.title }}</span></li>
+    {%- endif -%}
+  </ol>
+</nav>

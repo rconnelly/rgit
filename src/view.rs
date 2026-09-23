@@ -24,8 +24,12 @@ const README_CANDIDATES: &[&str] = &["README.md", "README", "readme.md", "Readme
 
 const OVERLAY_BASE: &str = include_str!("../view-site/templates/base.html");
 const OVERLAY_INDEX: &str = include_str!("../view-site/templates/index.html");
+const OVERLAY_SECTION: &str = include_str!("../view-site/templates/section.html");
+const OVERLAY_PAGE: &str = include_str!("../view-site/templates/page.html");
+const OVERLAY_CRUMBS: &str = include_str!("../view-site/templates/partials/repo-crumbs.html");
 const OVERLAY_THEME_INIT: &str = include_str!("../view-site/templates/partials/theme-init.html");
 const OVERLAY_CSS: &str = include_str!("../view-site/static/custom.css");
+const OVERLAY_JS: &str = include_str!("../view-site/static/repo.js");
 const OVERLAY_MARK: &str = include_str!("../view-site/static/brand/rabun.svg");
 
 /// CLI options for [`run`].
@@ -343,7 +347,17 @@ fn name_from_clone_url(url: &str) -> Option<String> {
 }
 
 async fn commit_info(repo: &Path, sha: &str) -> Result<CommitInfo> {
-    let line = git::git_stdout(repo, &["log", "-1", "--format=%h\t%s\t%an\t%cI", sha]).await?;
+    let line = git::git_stdout(
+        repo,
+        &[
+            "log",
+            "-1",
+            "--date=short",
+            "--format=%h\t%s\t%an\t%ad",
+            sha,
+        ],
+    )
+    .await?;
     let mut parts = line.splitn(4, '\t');
     let short = parts.next().unwrap_or(sha).to_string();
     let subject = parts.next().unwrap_or("").to_string();
@@ -596,11 +610,18 @@ fn fence_for(body: &str) -> String {
 fn write_overlays(site_dir: &Path) -> Result<()> {
     write_embed(&site_dir.join("templates/base.html"), OVERLAY_BASE)?;
     write_embed(&site_dir.join("templates/index.html"), OVERLAY_INDEX)?;
+    write_embed(&site_dir.join("templates/section.html"), OVERLAY_SECTION)?;
+    write_embed(&site_dir.join("templates/page.html"), OVERLAY_PAGE)?;
+    write_embed(
+        &site_dir.join("templates/partials/repo-crumbs.html"),
+        OVERLAY_CRUMBS,
+    )?;
     write_embed(
         &site_dir.join("templates/partials/theme-init.html"),
         OVERLAY_THEME_INIT,
     )?;
     write_embed(&site_dir.join("static/custom.css"), OVERLAY_CSS)?;
+    write_embed(&site_dir.join("static/repo.js"), OVERLAY_JS)?;
     write_embed(&site_dir.join("static/brand/rabun.svg"), OVERLAY_MARK)?;
     Ok(())
 }
@@ -643,7 +664,7 @@ note = {note}
 [extra.devlab.navigation]
 links = [
   {{ name = "Home", path = "/" }},
-  {{ name = "Files", path = "/tree/" }},
+  {{ name = "Browse", path = "/tree/" }},
 ]
 
 [extra.devlab.appearance]
@@ -967,8 +988,18 @@ mod tests {
 
         let toml = std::fs::read_to_string(site.join("zola.toml")).unwrap();
         assert!(toml.contains("theme = \"devlab-theme\""));
-        assert!(site.join("templates/index.html").exists());
+        assert!(toml.contains("name = \"Browse\""));
+        assert!(toml.contains("path = \"/tree/\""));
+        let index = std::fs::read_to_string(site.join("templates/index.html")).unwrap();
+        assert!(index.contains("Browse files"));
+        assert!(index.contains("/tree/"));
+        assert!(index.contains("data-copy-url"));
+        assert!(index.contains("repo-commit-sha"));
+        assert!(site.join("templates/section.html").exists());
+        assert!(site.join("templates/page.html").exists());
+        assert!(site.join("templates/partials/repo-crumbs.html").exists());
         assert!(site.join("static/custom.css").exists());
+        assert!(site.join("static/repo.js").exists());
     }
 
     #[tokio::test]

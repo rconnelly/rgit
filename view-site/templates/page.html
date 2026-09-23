@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="repo-file-page">
+  {% include "partials/repo-crumbs.html" %}
+
+  <header class="repo-file-header">
+    <p class="repo-eyebrow">File</p>
+    <h1>{{ page.title }}</h1>
+    {% if page.description %}
+    <p class="repo-tree-path"><a href="{{ get_url(path='@/tree/_index.md') }}">/tree</a>/{{ page.description }}</p>
+    {% endif %}
+  </header>
+
+  <div class="content">
+    {{ page.content | safe }}
+  </div>
+</article>
+{% endblock content %}
