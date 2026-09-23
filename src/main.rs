@@ -53,6 +53,14 @@ async fn run() -> Result<()> {
         print!("{}", remote::manage(command)?);
         return Ok(());
     }
+    if let Commands::Agent {
+        labels,
+        remote,
+        command: None,
+    } = &cli.command
+    {
+        return rabun_git::agent::poll(labels, remote.as_deref().unwrap_or("origin"));
+    }
     if cli.command.requires_service_uid() && systemd_env_present() && !is_service_user() {
         bail!(
             "this command must run as {} so {SERVICE_HOME} stays writable by the service; start a session with `rabun-git shell`",
@@ -94,6 +102,14 @@ fn run_named_remote(invoke: remote::ClientInvoke) -> Result<()> {
     let mut parse_from = vec![rabun_git::cli::invoked_name()];
     parse_from.extend(invoke.args.iter().cloned());
     let cli = rabun_git::cli::parse_from(&parse_from);
+    if let Commands::Agent {
+        labels,
+        command: None,
+        ..
+    } = &cli.command
+    {
+        return rabun_git::agent::poll(labels, &invoke.name);
+    }
     if let Commands::Key {
         command:
             KeyCommands::Copy {

@@ -40,6 +40,9 @@ impl Store {
         if !self.access_path().exists() {
             self.save_access(&AccessFile::default())?;
         }
+        if !self.builders_path().exists() {
+            self.save_builders(&BuildersFile::default())?;
+        }
         Ok(())
     }
 
@@ -54,6 +57,10 @@ impl Store {
 
     fn access_path(&self) -> PathBuf {
         self.root.join("access.yaml")
+    }
+
+    fn builders_path(&self) -> PathBuf {
+        self.root.join("builders.yaml")
     }
 
     /// `keys/<user>.pub`
@@ -89,6 +96,55 @@ impl Store {
     /// Write `access.yaml` atomically.
     pub fn save_access(&self, access: &AccessFile) -> Result<()> {
         write_yaml(&self.access_path(), access)
+    }
+
+    /// Load `builders.yaml`.
+    pub fn load_builders(&self) -> Result<BuildersFile> {
+        read_yaml(&self.builders_path())
+    }
+
+    /// Write `builders.yaml` atomically.
+    pub fn save_builders(&self, builders: &BuildersFile) -> Result<()> {
+        write_yaml(&self.builders_path(), builders)
+    }
+
+    /// True when any registered builder advertises `label`.
+    pub fn has_builder_label(&self, label: &str) -> bool {
+        self.load_builders()
+            .ok()
+            .map(|file| {
+                file.builders
+                    .iter()
+                    .any(|b| b.labels.iter().any(|l| l == label))
+            })
+            .unwrap_or(false)
+    }
+
+    /// Builder record for a forge login, if registered.
+    pub fn builder_by_name(&self, name: &str) -> Result<Option<BuilderRecord>> {
+        Ok(self
+            .load_builders()?
+            .builders
+            .into_iter()
+            .find(|b| b.name == name))
+    }
+
+    /// Register or update a builder (name + labels).
+    pub fn upsert_builder(&self, name: &str, labels: &[String]) -> Result<()> {
+        valid_user(name)?;
+        if labels.is_empty() {
+            bail!("builder {name} needs at least one --label");
+        }
+        let mut file = self.load_builders()?;
+        if let Some(existing) = file.builders.iter_mut().find(|b| b.name == name) {
+            existing.labels = labels.to_vec();
+        } else {
+            file.builders.push(BuilderRecord {
+                name: name.to_string(),
+                labels: labels.to_vec(),
+            });
+        }
+        self.save_builders(&file)
     }
 
     /// Add a user (idempotent name, last write wins for admin flag).
@@ -306,6 +362,24 @@ pub struct AccessFile {
     /// `owner/name` → user → role.
     #[serde(default)]
     pub repos: indexmap::IndexMap<String, indexmap::IndexMap<String, Role>>,
+}
+
+/// `builders.yaml` document.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct BuildersFile {
+    /// Registered agents.
+    #[serde(default)]
+    pub builders: Vec<BuilderRecord>,
+}
+
+/// One builder agent.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BuilderRecord {
+    /// Forge login / agent name.
+    pub name: String,
+    /// Labels this agent claims (`linux`, `macos`, `windows`).
+    #[serde(default)]
+    pub labels: Vec<String>,
 }
 
 impl AccessFile {

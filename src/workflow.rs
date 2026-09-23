@@ -94,6 +94,64 @@ pub struct Job {
     /// Extra env for this job.
     #[serde(default)]
     pub env: IndexMap<String, String>,
+    /// Builder labels (`linux`, `macos`, `windows`). Empty = forge host.
+    #[serde(default, rename = "runs-on", deserialize_with = "runs_on_labels")]
+    pub runs_on: Vec<String>,
+    /// `sh`, `bash`, or `pwsh`. Empty = default for the label.
+    #[serde(default)]
+    pub shell: Option<String>,
+}
+
+fn runs_on_labels<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = Value::deserialize(deserializer)?;
+    match value {
+        Value::String(label) => {
+            let label = label.trim();
+            if label.is_empty() {
+                Ok(Vec::new())
+            } else {
+                Ok(vec![label.to_string()])
+            }
+        }
+        Value::Sequence(seq) => {
+            let mut out = Vec::new();
+            for item in seq {
+                if let Value::String(label) = item {
+                    let label = label.trim();
+                    if !label.is_empty() {
+                        out.push(label.to_string());
+                    }
+                }
+            }
+            Ok(out)
+        }
+        _ => Ok(Vec::new()),
+    }
+}
+
+impl Job {
+    /// Labels to fan out. Empty means run on the forge host.
+    pub fn runs_on_labels(&self) -> Vec<String> {
+        self.runs_on.clone()
+    }
+
+    /// Shell for `label` (`windows` → `pwsh`, else `sh`) unless `shell:` is set.
+    pub fn shell_for(&self, label: &str) -> String {
+        if let Some(shell) = &self.shell {
+            let shell = shell.trim();
+            if !shell.is_empty() {
+                return shell.to_string();
+            }
+        }
+        if label == "windows" {
+            "pwsh".into()
+        } else {
+            "sh".into()
+        }
+    }
 }
 
 /// A single `run:` step.
@@ -216,5 +274,25 @@ jobs:
         assert!(wf.matches(Event::Tag, None));
         assert!(wf.matches(Event::Request, None));
         assert_eq!(wf.jobs["test"].steps[0].run, "cargo test --locked");
+        assert!(wf.jobs["test"].runs_on.is_empty());
+    }
+
+    #[test]
+    fn parse_runs_on_string_and_list() {
+        let one = parse(
+            "name: ci\non:\n  push:\n    branches: [master]\njobs:\n  t:\n    runs-on: macos\n    steps:\n      - run: true\n",
+        )
+        .unwrap();
+        assert_eq!(one.jobs["t"].runs_on_labels(), vec!["macos"]);
+        assert_eq!(one.jobs["t"].shell_for("macos"), "sh");
+        let many = parse(
+            "name: ci\non:\n  push:\n    branches: [master]\njobs:\n  t:\n    runs-on: [linux, macos, windows]\n    shell: bash\n    steps:\n      - run: true\n",
+        )
+        .unwrap();
+        assert_eq!(
+            many.jobs["t"].runs_on_labels(),
+            vec!["linux", "macos", "windows"]
+        );
+        assert_eq!(many.jobs["t"].shell_for("windows"), "bash");
     }
 }

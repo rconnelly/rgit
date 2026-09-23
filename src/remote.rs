@@ -15,7 +15,7 @@ use crate::store::atomic_write;
 /// Commands that cannot be used as a remote name.
 pub const RESERVED_NAMES: &[&str] = &[
     "init", "check", "status", "serve", "shell", "user", "key", "repo", "access", "request", "run",
-    "hook", "remote", "help",
+    "hook", "remote", "help", "agent",
 ];
 
 /// Parsed SSH target for a named remote.
@@ -222,6 +222,40 @@ pub fn ssh_exec(target: &RemoteTarget, identity: Option<&Path>, payload: &[Strin
         std::process::exit(status.code().unwrap_or(1));
     }
     Ok(())
+}
+
+/// Same as [`ssh_exec`] but returns stdout (and fails as an error, no process exit).
+pub fn ssh_capture(
+    target: &RemoteTarget,
+    identity: Option<&Path>,
+    payload: &[String],
+) -> Result<String> {
+    if payload.is_empty() {
+        bail!("missing command after remote name");
+    }
+    let cmd = quote_payload(payload)?;
+    let mut ssh = Command::new("ssh");
+    if let Some(identity) = identity {
+        ssh.arg("-i").arg(identity);
+    }
+    ssh.arg("-p").arg(target.port.to_string());
+    ssh.arg("-q");
+    ssh.arg(format!("{}@{}", target.user, target.host));
+    ssh.arg("--");
+    ssh.arg(&cmd);
+    let output = ssh
+        .output()
+        .with_context(|| format!("run ssh {}@{}", target.user, target.host))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!(
+            "ssh {}@{} exited {}: {stderr}",
+            target.user,
+            target.host,
+            output.status.code().unwrap_or(1)
+        );
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
 /// Parse `HOST`, `user@HOST`, `user@HOST:port`, or `ssh://user@HOST:port`.

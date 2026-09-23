@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rgit origin key copy` registers a public key over host SSH (port 22) so the first forge key does not need `rabun-git shell` on the server (`--admin` creates the user; `--host` / `remote add --host` override `$USER@<forge-host>:22`)
 - `rgit` is the official short command: a symlink beside `rabun-git` (Ubuntu install and `scripts/link-rgit.sh`); help text follows argv0; a foreign `rgit` is not overwritten
 - `./scripts/install.sh` installs from this checkout (`cargo install --path . --locked`) and links `rgit`
+- Workflow `runs-on:` fans out to linux / macos / windows; registered `rgit agent` builders poll over SSH and claim queued jobs (`builders.yaml`)
 
 ## [0.1.0]
 

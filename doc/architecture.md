@@ -24,7 +24,8 @@ SSH is the only public network surface (default `0.0.0.0:2222`; russh username `
 - `keys/<user>.pub` — OpenSSH public keys
 - `access.yaml` — `owner/name` → user → `read` \| `write` \| `admin`
 - `repos/<owner>/<name>.git/` — bare repositories
-- `runs/<owner>/<name>/<run-id>/` — `status.yaml` + `log.txt`
+- `runs/<owner>/<name>/<run-id>/` — `status.yaml` + `job.yaml` + `log.txt`
+- `builders.yaml` — registered workflow agents and labels
 - `ssh_host_ed25519_key` — generated on first `serve`
 - `status.json` — `rabun.companion/v1`
 
@@ -50,7 +51,7 @@ Stored in git so they clone with the repo:
 
 ## Workflows
 
-`.rabun/workflows/*.yml` at the triggering commit. Subset: `on.push.branches`, `on.tag`, `on.request`, `jobs.*.steps[].run`, `env`, `timeout_minutes`. No `uses:`, matrix, or containers. The runner is trusted (same machine, same `rabun-git` systemd user).
+`.rabun/workflows/*.yml` at the triggering commit. Subset: `on.push.branches`, `on.tag`, `on.request`, `jobs.*.steps[].run`, `jobs.*.runs-on`, `jobs.*.shell`, `env`, `timeout_minutes`. No `uses:`, full matrix, or containers. Empty `runs-on` (or `linux` with no linux builder) runs on the forge host. Other labels are queued in `runs/` until a registered agent claims them over SSH (`builders.yaml`).
 
 ## systemd
 

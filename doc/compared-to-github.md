@@ -39,7 +39,7 @@ A shorter map lives in [What Rabun Git is](what-it-is.md).
 
 | GitHub | `gh` | rgit | Gap |
 | --- | --- | --- | --- |
-| Actions (`.github/workflows`) | `gh run` / `workflow` | `.rabun/workflows/*.yml` + `rgit origin run list\|show\|logs` | `run:` shell only on the forge host; no `uses:`, matrix, containers, secrets store, or marketplace |
+| Actions (`.github/workflows`) | `gh run` / `workflow` | `.rabun/workflows/*.yml` + `runs-on` + `rgit agent` | `run:` only; fan-out labels not a full matrix; no `uses:`, containers, secrets store, or marketplace |
 
 ## GitHub products with no rgit equivalent
 

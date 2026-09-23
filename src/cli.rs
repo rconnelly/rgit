@@ -116,6 +116,17 @@ pub enum Commands {
         #[command(subcommand)]
         command: RunCommands,
     },
+    /// Builder agents (`rgit agent --labels macos` or `rgit origin agent …`)
+    Agent {
+        /// Labels this process claims (poll loop)
+        #[arg(long)]
+        labels: Vec<String>,
+        /// Named remote for the poll loop (default `origin`)
+        #[arg(long)]
+        remote: Option<String>,
+        #[command(subcommand)]
+        command: Option<AgentCommands>,
+    },
     /// Git hooks (called from `hooks/update`, not over SSH)
     #[command(hide = true)]
     Hook {
@@ -280,6 +291,49 @@ pub enum RequestCommands {
     },
 }
 
+/// `rabun-git agent` subcommands (over SSH except the poll loop).
+#[derive(Subcommand)]
+pub enum AgentCommands {
+    /// Register a builder (forge admin)
+    Register {
+        /// Builder / forge login
+        name: String,
+        /// Labels this builder claims
+        #[arg(long = "label", alias = "labels")]
+        labels: Vec<String>,
+        /// Public key file
+        #[arg(long)]
+        file: Option<PathBuf>,
+        /// Public key text
+        #[arg(long)]
+        literal: Option<String>,
+    },
+    /// List builders
+    List,
+    /// Claim the oldest queued job matching labels
+    Next {
+        /// Labels to claim (default: this builder's registered labels)
+        #[arg(long = "label", alias = "labels")]
+        labels: Vec<String>,
+    },
+    /// Append to a run log
+    Log {
+        /// Run id
+        run_id: String,
+        /// Log chunk
+        #[arg(long)]
+        literal: Option<String>,
+    },
+    /// Mark a claimed run finished
+    Finish {
+        /// Run id
+        run_id: String,
+        /// `passed` or `failed`
+        #[arg(long)]
+        status: String,
+    },
+}
+
 /// `rabun-git run` subcommands.
 #[derive(Subcommand)]
 pub enum RunCommands {
@@ -363,6 +417,7 @@ impl Commands {
                 | Commands::Key {
                     command: KeyCommands::Copy { .. },
                 }
+                | Commands::Agent { command: None, .. }
         )
     }
 
@@ -378,6 +433,10 @@ impl Commands {
                 | Commands::Run { .. }
                 | Commands::Key {
                     command: KeyCommands::Add { .. } | KeyCommands::List { .. },
+                }
+                | Commands::Agent {
+                    command: Some(_),
+                    ..
                 }
         )
     }
@@ -422,6 +481,24 @@ mod tests {
             }
         }
         .requires_service_uid());
+        assert!(Commands::Agent {
+            labels: vec!["macos".into()],
+            remote: None,
+            command: None,
+        }
+        .ssh_forbidden());
+        assert!(Commands::Agent {
+            labels: Vec::new(),
+            remote: None,
+            command: Some(AgentCommands::List),
+        }
+        .requires_service_uid());
+        assert!(!Commands::Agent {
+            labels: Vec::new(),
+            remote: None,
+            command: Some(AgentCommands::List),
+        }
+        .ssh_forbidden());
     }
 
     #[test]

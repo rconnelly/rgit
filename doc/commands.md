@@ -30,7 +30,7 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, `serve`, `shell`, `remote`, and `key copy` work only on the machine that runs them (`remote` and `key copy` are this machine only). `key copy` uses host SSH on port 22 (not git port 2222). The others work over SSH or `rgit origin …`.
+`init`, `check`, `status`, `serve`, `shell`, `remote`, `key copy`, and `rgit agent --labels` (the poll loop) work only on the machine that runs them. `key copy` uses host SSH on port 22 (not git port 2222). The others work over SSH or `rgit origin …`.
 
 On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
 
@@ -107,6 +107,12 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 | `rabun-git run list owner/name` | CI runs |
 | `rabun-git run show owner/name ID` | Status YAML |
 | `rabun-git run logs owner/name ID` | Captured log |
+| `rabun-git agent --labels LABEL [--remote origin]` | Poll loop on this machine |
+| `rabun-git agent register NAME --label LABEL [--file KEY.pub]` | Register a builder (admin) |
+| `rabun-git agent list` | List builders |
+| `rabun-git agent next [--label LABEL]` | Claim the oldest matching queued job |
+| `rabun-git agent log RUN_ID [--literal TEXT]` | Append to a run log |
+| `rabun-git agent finish RUN_ID --status passed\|failed` | Mark a claimed run done |
 
 ## Git URLs and env
 

@@ -7,6 +7,7 @@
 //! The user guide lives in `doc/README.md` in the repository.
 
 pub mod acl;
+pub mod agent;
 pub mod cli;
 pub mod config;
 pub mod dispatch;

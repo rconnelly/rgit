@@ -21,12 +21,17 @@ pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<
         Commands::Request { command } => request_cmd(store, actor, command).await,
         Commands::Run { command } => run_cmd(store, actor, command),
         Commands::Hook { command } => hook_cmd(command),
+        Commands::Agent {
+            command: Some(command),
+            ..
+        } => crate::agent::execute(store, actor, command),
         Commands::Init
         | Commands::Check
         | Commands::Status
         | Commands::Serve { .. }
         | Commands::Shell
-        | Commands::Remote { .. } => {
+        | Commands::Remote { .. }
+        | Commands::Agent { command: None, .. } => {
             bail!("command is not available here")
         }
     }
@@ -214,8 +219,22 @@ fn run_cmd(store: &Store, actor: &Actor, command: RunCommands) -> Result<String>
             let mut s = String::new();
             for run in runs {
                 s.push_str(&format!(
-                    "{} {} {} {} {}\n",
-                    run.id, run.status, run.workflow, run.job, run.sha
+                    "{} {} {} {} {} {} {}\n",
+                    run.id,
+                    run.status,
+                    run.workflow,
+                    run.job,
+                    run.sha,
+                    if run.runs_on.is_empty() {
+                        "host"
+                    } else {
+                        run.runs_on.as_str()
+                    },
+                    if run.agent.is_empty() {
+                        "-"
+                    } else {
+                        run.agent.as_str()
+                    }
                 ));
             }
             Ok(s)
@@ -263,6 +282,7 @@ pub async fn after_receive(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cli::AgentCommands;
     use russh::keys::{Algorithm, PrivateKey};
 
     #[tokio::test]
@@ -288,5 +308,43 @@ mod tests {
         .unwrap();
         assert!(out.contains("added 1"));
         assert!(!store.key_fingerprints("ada").unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn agent_register_and_list() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = Store::open(tmp.path());
+        store.ensure_layout().unwrap();
+        store.add_user("ada", true).unwrap();
+        let out = execute(
+            &store,
+            &Actor::Operator,
+            Commands::Agent {
+                labels: Vec::new(),
+                remote: None,
+                command: Some(AgentCommands::Register {
+                    name: "mac".into(),
+                    labels: vec!["macos".into()],
+                    file: None,
+                    literal: None,
+                }),
+            },
+        )
+        .await
+        .unwrap();
+        assert!(out.contains("registered"));
+        let list = execute(
+            &store,
+            &Actor::Operator,
+            Commands::Agent {
+                labels: Vec::new(),
+                remote: None,
+                command: Some(AgentCommands::List),
+            },
+        )
+        .await
+        .unwrap();
+        assert!(list.contains("mac macos"));
+        assert!(store.has_builder_label("macos"));
     }
 }
