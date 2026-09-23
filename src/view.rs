@@ -71,8 +71,7 @@ pub async fn run(config: &Config, opts: Options) -> Result<()> {
     if !zola_on_path() {
         bail!(
             "rgit view needs Zola 0.23.4 or newer on PATH (DevLab's floor).\n\
-             Install: https://www.getzola.org/documentation/getting-started/installation/\n\
-             Or: rsites zola install"
+             Install: https://www.getzola.org/documentation/getting-started/installation/"
         );
     }
     let cwd = std::env::current_dir().context("current directory")?;
