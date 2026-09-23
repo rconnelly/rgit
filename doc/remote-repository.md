@@ -30,17 +30,18 @@ You can run create on the server:
 rabun-git repo create ada/website
 ```
 
-Or from a laptop, over the git SSH port:
+Or from a laptop, after `rabun-git remote add origin git@git.example.com`:
 
 ```bash
-ssh -p 2222 git@git.example.com repo create ada/website
+rabun-git origin repo create ada/website
+# same as: ssh -p 2222 git@git.example.com repo create ada/website
 ```
 
 Confirm:
 
 ```bash
-rabun-git repo list
-rabun-git repo show ada/website
+rabun-git origin repo list
+rabun-git origin repo show ada/website
 ```
 
 `repo show` prints the on-disk path and who has access.

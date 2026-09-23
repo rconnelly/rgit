@@ -13,6 +13,7 @@ pub mod dispatch;
 pub mod git;
 pub mod hook;
 pub mod names;
+pub mod remote;
 pub mod repo;
 pub mod request;
 pub mod runner;

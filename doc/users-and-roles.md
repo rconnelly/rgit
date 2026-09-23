@@ -2,10 +2,11 @@
 
 Rabun Git has no sign-up page. An admin creates a **user**, attaches that person’s **SSH public key**, then **grants a role** on each repository they should see.
 
-This page is a set of workflows. Run `rabun-git …` on the server (operator, full access) or the same commands over SSH if you are a forge admin:
+This page is a set of workflows. Run `rabun-git …` on the server (operator, full access), over SSH if you are a forge admin, or from a laptop after `rabun-git remote add origin git@git.example.com`:
 
 ```bash
-ssh -p 2222 git@git.example.com user list
+rabun-git origin user list
+# same as: ssh -p 2222 git@git.example.com user list
 ```
 
 Examples use:
@@ -75,9 +76,18 @@ Copy that one line to the server (file `linus.pub`) and **do not** copy the priv
 
 The **first** key for a new user must be added by an operator or forge admin (Linus cannot SSH in yet). After that, he can append extra keys himself.
 
+On the server (or copy the `.pub` to the server):
+
 ```bash
 rabun-git key add linus --file /path/to/linus.pub
 rabun-git key list linus
+```
+
+From a laptop that already has an admin key, `--file` is read locally:
+
+```bash
+rabun-git origin key add linus --file ~/.ssh/id_ed25519.pub
+rabun-git origin key list linus
 ```
 
 `key list` prints fingerprints, not the key material. Only a forge admin can add keys for someone else.

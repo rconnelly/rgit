@@ -25,7 +25,8 @@ pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<
         | Commands::Check
         | Commands::Status
         | Commands::Serve { .. }
-        | Commands::Shell => {
+        | Commands::Shell
+        | Commands::Remote { .. } => {
             bail!("command is not available here")
         }
     }
@@ -57,12 +58,20 @@ fn user(store: &Store, actor: &Actor, command: UserCommands) -> Result<String> {
 
 fn key(store: &Store, actor: &Actor, command: KeyCommands) -> Result<String> {
     match command {
-        KeyCommands::Add { user, file } => {
+        KeyCommands::Add {
+            user,
+            file,
+            literal,
+        } => {
             if !actor.is_forge_admin(store)? && actor.name() != Some(user.as_str()) {
                 anyhow::bail!("only forge admins can add keys for other users");
             }
-            let text = std::fs::read_to_string(&file)
-                .map_err(|err| anyhow::anyhow!("read {}: {err}", file.display()))?;
+            let text = match (file, literal) {
+                (Some(path), None) => std::fs::read_to_string(&path)
+                    .map_err(|err| anyhow::anyhow!("read {}: {err}", path.display()))?,
+                (None, Some(text)) => text,
+                _ => anyhow::bail!("key add requires --file or --literal"),
+            };
             let n = store.add_keys(&user, &text)?;
             Ok(format!("added {n} key(s) for {user}\n"))
         }
@@ -86,8 +95,12 @@ async fn repo_cmd(store: &Store, actor: &Actor, command: RepoCommands) -> Result
             repo::create(store, actor, &name).await?;
             Ok(format!("created {name}\n"))
         }
-        RepoCommands::List => {
-            let repos = repo::list(store, actor)?;
+        RepoCommands::List { user } => {
+            let repos = if let Some(user) = user {
+                repo::list_for_user(store, actor, &user)?
+            } else {
+                repo::list(store, actor)?
+            };
             if repos.is_empty() {
                 Ok(String::from("(no repositories)\n"))
             } else {
@@ -242,4 +255,35 @@ pub async fn after_receive(
         crate::workflow::trigger_ref(store, repo, &refname, &sha).await?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use russh::keys::{Algorithm, PrivateKey};
+
+    #[tokio::test]
+    async fn key_add_literal() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = Store::open(tmp.path());
+        store.ensure_layout().unwrap();
+        store.add_user("ada", true).unwrap();
+        let key = PrivateKey::random(&mut rand::rng(), Algorithm::Ed25519).unwrap();
+        let literal = key.public_key().to_openssh().unwrap();
+        let out = execute(
+            &store,
+            &Actor::Operator,
+            Commands::Key {
+                command: KeyCommands::Add {
+                    user: "ada".into(),
+                    file: None,
+                    literal: Some(literal),
+                },
+            },
+        )
+        .await
+        .unwrap();
+        assert!(out.contains("added 1"));
+        assert!(!store.key_fingerprints("ada").unwrap().is_empty());
+    }
 }

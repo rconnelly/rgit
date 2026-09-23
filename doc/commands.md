@@ -1,13 +1,25 @@
 # Command reference
 
-Global flag (all commands):
+Global flags (all commands):
 
 ```bash
 rabun-git --config /path/to/rabun-git.toml …
 # or: export RABUN_GIT_CONFIG=/path/to/rabun-git.toml
+rabun-git --identity ~/.ssh/id_ed25519 origin repo list
+# or: export RABUN_GIT_SSH_IDENTITY=~/.ssh/id_ed25519
 ```
 
 `rabun-git --version` prints the crate version.
+
+On a laptop, save a forge host once, then use that name as the first word (this is a **forge** alias, not a git remote):
+
+```bash
+rabun-git remote add origin git@git.example.com
+rabun-git origin repo list
+rabun-git origin key add ada --file ~/.ssh/id_ed25519.pub
+```
+
+Names live in `~/.config/rabun-git/remotes.toml` (`RABUN_GIT_REMOTES` overrides the path). They cannot collide with clap commands (`repo`, `user`, `key`, …).
 
 Over SSH, omit the `rabun-git` prefix and use port **2222**:
 
@@ -15,7 +27,7 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, `serve`, and `shell` work only on the host, not over SSH.
+`init`, `check`, `status`, `serve`, `shell`, and `remote` work only on the machine that runs them (`remote` is laptop-only). The others work over SSH or `rabun-git origin …`.
 
 On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
 
@@ -27,7 +39,7 @@ rabun-git repo create ada/website
 exit
 ```
 
-After the first admin key, `ssh -p 2222 git@HOST repo create ada/website` needs no sudo.
+After the first admin key, `rabun-git origin repo create ada/website` (or `ssh -p 2222 git@HOST …`) needs no sudo.
 
 ## Host / operator
 
@@ -39,6 +51,18 @@ After the first admin key, `ssh -p 2222 git@HOST repo create ada/website` needs 
 | `rabun-git serve [--bind HOST:PORT]` | Listen for git + management commands |
 | `rabun-git shell` | One sudo, then bash as the systemd user (prompt `(rabun-git)`; `exit` to leave) |
 
+## Laptop remotes
+
+| Command | What it does |
+| --- | --- |
+| `rabun-git remote add NAME URL [--identity FILE]` | Save a forge host (`origin` is the usual name) |
+| `rabun-git remote list` | List saved names and URLs |
+| `rabun-git remote show NAME` | URL and optional identity |
+| `rabun-git remote remove NAME` | Delete a saved name |
+| `rabun-git NAME …` | Run a forge command on that host |
+
+URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Default SSH user `git`, default port `2222`.
+
 ## Users and keys
 
 | Command | What it does |
@@ -46,7 +70,8 @@ After the first admin key, `ssh -p 2222 git@HOST repo create ada/website` needs 
 | `rabun-git user add NAME [--admin]` | Create user or update forge-admin flag |
 | `rabun-git user list` | List logins |
 | `rabun-git user remove NAME` | Delete user, keys, and all grants |
-| `rabun-git key add USER --file KEY.pub` | Append OpenSSH public keys |
+| `rabun-git key add USER --file KEY.pub` | Append OpenSSH public keys from a local file |
+| `rabun-git key add USER --literal 'ssh-ed25519 AAAA…'` | Append a key given on the command line |
 | `rabun-git key list USER` | Fingerprints only |
 
 ## Repositories and ACL
@@ -55,6 +80,7 @@ After the first admin key, `ssh -p 2222 git@HOST repo create ada/website` needs 
 | --- | --- |
 | `rabun-git repo create owner/name` | Create a bare repo; creator gets repo admin |
 | `rabun-git repo list` | Repos the caller can read |
+| `rabun-git repo list --user NAME` | Repos that user can access (self or forge admin) |
 | `rabun-git repo show owner/name` | Path and grants |
 | `rabun-git access grant USER owner/name [--role read\|write\|admin]` | Set role (`write` if omitted) |
 | `rabun-git access revoke USER owner/name` | Remove that user’s grant |
@@ -87,6 +113,8 @@ ssh://git@HOST:2222/owner/name.git
 | `RABUN_GIT_HEALTH_BIND` | Loopback `GET /health` (default `127.0.0.1:8792`; empty/`off` disables) |
 | `RABUN_GIT_STATUS_FILE` | Companion JSON (default `$RABUN_GIT_ROOT/status.json`) |
 | `RABUN_GIT_CONFIG` | Path to `rabun-git.toml` |
+| `RABUN_GIT_REMOTES` | Laptop remotes file (default `~/.config/rabun-git/remotes.toml`) |
+| `RABUN_GIT_SSH_IDENTITY` | Private key for `rabun-git origin …` |
 
 Special push to open a request:
 

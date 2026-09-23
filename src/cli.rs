@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::{ArgGroup, Parser, Subcommand};
 
 use crate::acl::Role;
 use crate::names::RepoName;
@@ -18,6 +18,9 @@ pub struct Cli {
     /// Path to rabun-git.toml
     #[arg(long, global = true, env = "RABUN_GIT_CONFIG")]
     pub config: Option<PathBuf>,
+    /// SSH private key for a named remote (`rabun-git origin …`)
+    #[arg(long, global = true, env = "RABUN_GIT_SSH_IDENTITY")]
+    pub identity: Option<PathBuf>,
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -39,6 +42,11 @@ pub enum Commands {
     },
     /// Interactive bash as the systemd user (`rabun-git`; host only)
     Shell,
+    /// Laptop-only named forge hosts (`~/.config/rabun-git/remotes.toml`)
+    Remote {
+        #[command(subcommand)]
+        command: RemoteCommands,
+    },
     /// Forge users (`users.yaml`)
     User {
         #[command(subcommand)]
@@ -101,12 +109,16 @@ pub enum UserCommands {
 #[derive(Subcommand)]
 pub enum KeyCommands {
     /// Append an OpenSSH public key for a user
+    #[command(group(ArgGroup::new("key_src").required(true).args(["file", "literal"])))]
     Add {
         /// Login name
         user: String,
         /// File containing one or more OpenSSH public keys
         #[arg(long)]
-        file: PathBuf,
+        file: Option<PathBuf>,
+        /// OpenSSH public key text (laptop client / SSH)
+        #[arg(long)]
+        literal: Option<String>,
     },
     /// List keys for a user (fingerprints, no secrets)
     List {
@@ -124,7 +136,11 @@ pub enum RepoCommands {
         name: RepoName,
     },
     /// List repositories the actor can read
-    List,
+    List {
+        /// Forge login; list repositories that user can access
+        #[arg(long)]
+        user: Option<String>,
+    },
     /// Show one repository
     Show {
         /// `owner/name`
@@ -235,6 +251,33 @@ pub enum RunCommands {
     },
 }
 
+/// Laptop-only `rabun-git remote` subcommands.
+#[derive(Subcommand)]
+pub enum RemoteCommands {
+    /// Save a forge host alias (default name: `origin`)
+    Add {
+        /// Alias used as `rabun-git <name> …`
+        name: String,
+        /// `HOST`, `user@HOST`, `user@HOST:port`, or `ssh://user@HOST:port`
+        url: String,
+        /// SSH private key for this remote
+        #[arg(long)]
+        identity: Option<PathBuf>,
+    },
+    /// List saved remotes
+    List,
+    /// Show one remote
+    Show {
+        /// Alias
+        name: String,
+    },
+    /// Delete a saved remote
+    Remove {
+        /// Alias
+        name: String,
+    },
+}
+
 /// Internal git hook entrypoints.
 #[derive(Subcommand)]
 pub enum HookCommands {
@@ -259,6 +302,7 @@ impl Commands {
                 | Commands::Status
                 | Commands::Serve { .. }
                 | Commands::Shell
+                | Commands::Remote { .. }
                 | Commands::Hook { .. }
         )
     }
@@ -291,5 +335,13 @@ mod tests {
         }
         .requires_service_uid());
         assert!(!Commands::Check.requires_service_uid());
+        assert!(Commands::Remote {
+            command: RemoteCommands::List
+        }
+        .ssh_forbidden());
+        assert!(!Commands::Remote {
+            command: RemoteCommands::List
+        }
+        .requires_service_uid());
     }
 }

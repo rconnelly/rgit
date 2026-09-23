@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `push.sh` uses SSH publickey only (`--identity` optional) and skips sudo when the remote user is already root or has passwordless sudo
 - `pack.sh` refuses a root-owned `dist/release` (or packs under `/tmp`) instead of failing mid-tarball after `sudo pack`
 - `rabun-git shell` opens an operator bash as the systemd user so `user` / `repo` / `key` do not need `sudo -u` on each command (prompt `(rabun-git)`)
+- Laptop client: `rabun-git remote add origin git@HOST` then `rabun-git origin …` for forge commands (`key add --file` reads the laptop path; `repo list --user` lists that user’s remotes)
 
 ## [0.1.0]
 

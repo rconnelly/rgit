@@ -56,6 +56,21 @@ pub fn list(store: &Store, actor: &Actor) -> Result<Vec<RepoName>> {
     Ok(out)
 }
 
+/// Repos where `user` has a role in `access.yaml`.
+pub fn list_for_user(store: &Store, actor: &Actor, user: &str) -> Result<Vec<RepoName>> {
+    if !actor.is_forge_admin(store)? && actor.name() != Some(user) {
+        bail!("only forge admins can list other users' repositories");
+    }
+    let access = store.load_access()?;
+    let mut out = Vec::new();
+    for repo in store.list_repos()? {
+        if access.role(&repo, user).is_some() {
+            out.push(repo);
+        }
+    }
+    Ok(out)
+}
+
 /// Show one repo (must be readable).
 pub fn show(store: &Store, actor: &Actor, name: &RepoName) -> Result<String> {
     acl::require(store, actor, name, Role::Read)?;
@@ -116,5 +131,36 @@ mod tests {
         assert_eq!(listed.len(), 1);
         assert!(store.repo_path(&name).join("HEAD").exists());
         assert!(store.repo_path(&name).join("hooks/update").exists());
+    }
+
+    #[test]
+    fn list_for_user_acl() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = Store::open(tmp.path());
+        store.ensure_layout().unwrap();
+        store.add_user("alice", true).unwrap();
+        store.add_user("bob", false).unwrap();
+        let alice_app = RepoName::parse("alice/app").unwrap();
+        let bob_notes = RepoName::parse("bob/notes").unwrap();
+        std::fs::create_dir_all(store.repo_path(&alice_app)).unwrap();
+        std::fs::create_dir_all(store.repo_path(&bob_notes)).unwrap();
+        store.grant("alice", &alice_app, Role::Admin).unwrap();
+        store.grant("bob", &alice_app, Role::Read).unwrap();
+        store.grant("bob", &bob_notes, Role::Admin).unwrap();
+
+        let as_alice = Actor::User("alice".into());
+        let as_bob = Actor::User("bob".into());
+        let bob_repos = list_for_user(&store, &as_alice, "bob").unwrap();
+        assert_eq!(
+            bob_repos
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>(),
+            vec!["alice/app", "bob/notes"]
+        );
+        let self_repos = list_for_user(&store, &as_bob, "bob").unwrap();
+        assert_eq!(self_repos.len(), 2);
+        let err = list_for_user(&store, &as_bob, "alice").unwrap_err();
+        assert!(err.to_string().contains("only forge admins"));
     }
 }

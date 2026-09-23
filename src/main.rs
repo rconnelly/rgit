@@ -1,7 +1,8 @@
 //! CLI for the Rabun git forge (`init`, `check`, `serve`, repo/request/run).
 
+use std::os::unix::fs::PermissionsExt;
 use std::os::unix::process::CommandExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 
 use anyhow::{bail, Context, Result};
@@ -10,6 +11,7 @@ use clap::Parser;
 use rabun_git::acl::Actor;
 use rabun_git::cli::{Cli, Commands};
 use rabun_git::config::Config;
+use rabun_git::remote;
 use rabun_git::store::Store;
 
 /// systemd env file written by Ubuntu bootstrap.
@@ -18,8 +20,11 @@ const SYSTEM_ENV: &str = "/etc/rabun-git/rabun-git.env";
 const DEFAULT_RUN_AS: &str = "rabun-git";
 /// systemd working directory / forge root on Ubuntu.
 const SERVICE_HOME: &str = "/var/lib/rabun-git";
-/// Prompt while `rabun-git shell` is active (`RABUN_GIT_SHELL=1`).
-const SHELL_PS1: &str = r"\[\e[0;36m\](rabun-git)\[\e[0m\] \w \$ ";
+/// Interactive bash overwrites env `PS1`; this rcfile sets the session prompt.
+const SHELL_RC: &str = r#"export RABUN_GIT_SHELL=1
+cd /var/lib/rabun-git 2>/dev/null || true
+PS1='\[\e[0;36m\](rabun-git)\[\e[0m\] \w \$ '
+"#;
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -35,9 +40,19 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> Result<()> {
+    if let Some(invoke) = remote::detect_invoke()? {
+        return run_named_remote(invoke);
+    }
     let cli = Cli::parse();
     if matches!(cli.command, Commands::Shell) {
         return run_operator_shell();
+    }
+    if matches!(cli.command, Commands::Remote { .. }) {
+        let Commands::Remote { command } = cli.command else {
+            unreachable!("just matched Remote");
+        };
+        print!("{}", remote::manage(command)?);
+        return Ok(());
     }
     if cli.command.requires_service_uid() && systemd_env_present() && !is_service_user() {
         bail!(
@@ -63,7 +78,7 @@ async fn run() -> Result<()> {
             let config = Config::load(cli.config.as_deref())?;
             rabun_git::serve(&config, bind).await
         }
-        Commands::Shell => unreachable!("handled above"),
+        Commands::Shell | Commands::Remote { .. } => unreachable!("handled above"),
         other => {
             let config = Config::load(cli.config.as_deref())?;
             let store = Store::open(config.root());
@@ -75,48 +90,55 @@ async fn run() -> Result<()> {
     }
 }
 
+/// `rabun-git origin …` — SSH to a saved forge host.
+fn run_named_remote(invoke: remote::ClientInvoke) -> Result<()> {
+    let mut parse_from = vec!["rabun-git".to_string()];
+    parse_from.extend(invoke.args.iter().cloned());
+    let cli = Cli::parse_from(&parse_from);
+    if cli.command.ssh_forbidden() {
+        bail!("run this on the forge host, not through `{}`", invoke.name);
+    }
+    let identity = cli.identity.or(invoke.identity);
+    let payload = remote::payload_args(&invoke.args)?;
+    remote::ssh_exec(&invoke.target, identity.as_deref(), &payload)
+}
+
 /// Interactive bash as the systemd user so operator commands own forge files.
 fn run_operator_shell() -> Result<()> {
     let target = run_as_user();
+    let rc = write_shell_rc()?;
     eprintln!("Forge operator as {target}. Prompt shows (rabun-git); type `exit` to leave.");
     if is_service_user() {
-        let home = Path::new(SERVICE_HOME);
-        if home.is_dir() {
-            std::env::set_current_dir(home).with_context(|| format!("chdir {}", home.display()))?;
-        }
-        let err = operator_bash().exec();
+        let err = operator_bash(&rc).exec();
         return Err(anyhow::anyhow!("exec /bin/bash: {err}"));
     }
-    // Do not use sudo --chdir / -D: Ubuntu sudoers rejects it with /usr/bin/env.
-    let start = if Path::new(SERVICE_HOME).is_dir() {
-        format!("cd {SERVICE_HOME} && exec /bin/bash --norc --noprofile -i")
-    } else {
-        "exec /bin/bash --norc --noprofile -i".into()
-    };
+    // No sudo --chdir / -D: Ubuntu sudoers rejects it with /usr/bin/env.
     let err = Command::new("sudo")
         .args([
             "-u",
             &target,
             "-H",
             "--",
-            "env",
-            "RABUN_GIT_SHELL=1",
-            &format!("PS1={SHELL_PS1}"),
             "/bin/bash",
-            "--norc",
-            "--noprofile",
-            "-c",
-            &start,
+            "--rcfile",
+            rc.to_str().context("shell rc path")?,
+            "-i",
         ])
         .exec();
     Err(anyhow::anyhow!("exec sudo -u {target} bash: {err}"))
 }
 
-fn operator_bash() -> Command {
+fn write_shell_rc() -> Result<PathBuf> {
+    let path = std::env::temp_dir().join(format!("rabun-git-shell.{}.rc", std::process::id()));
+    std::fs::write(&path, SHELL_RC).with_context(|| format!("write {}", path.display()))?;
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644))
+        .with_context(|| format!("chmod {}", path.display()))?;
+    Ok(path)
+}
+
+fn operator_bash(rc: &Path) -> Command {
     let mut bash = Command::new("/bin/bash");
-    bash.env("RABUN_GIT_SHELL", "1")
-        .env("PS1", SHELL_PS1)
-        .args(["--norc", "--noprofile", "-i"]);
+    bash.args(["--rcfile", rc.to_str().unwrap_or("/dev/null"), "-i"]);
     bash
 }
 
@@ -178,6 +200,12 @@ mod tests {
     #[test]
     fn clap_debug_assert() {
         Cli::command().debug_assert();
+    }
+
+    #[test]
+    fn shell_rc_sets_session_prompt() {
+        assert!(super::SHELL_RC.contains("(rabun-git)"));
+        assert!(super::SHELL_RC.contains("RABUN_GIT_SHELL=1"));
     }
 
     #[test]

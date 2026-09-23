@@ -67,7 +67,13 @@ If you do not have a key yet (on the laptop):
 ssh-keygen -t ed25519 -C "ada@git.example.com" -f ~/.ssh/id_ed25519
 ```
 
-Then copy `id_ed25519.pub` to the server and run `key add`.
+Then copy `id_ed25519.pub` to the server and run `key add`. The **first** admin key must be added on the host. After that, extra keys and every other forge command can run from a laptop:
+
+```bash
+rabun-git remote add origin git@git.example.com
+rabun-git origin key add ada --file ~/.ssh/id_ed25519.pub
+rabun-git origin repo list
+```
 
 ## 4. Verify the forge
 

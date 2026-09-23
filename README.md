@@ -10,6 +10,14 @@ If you already use `git clone` / `git push`, you can run this on a server you ow
 git remote add origin ssh://git@HOST:2222/owner/name.git
 ```
 
+Forge admin from a laptop (users, keys, repos — not `git push`):
+
+```bash
+rabun-git remote add origin git@HOST
+rabun-git origin repo list
+rabun-git origin key add ada --file ~/.ssh/id_ed25519.pub
+```
+
 Versions follow [Semantic Versioning](https://semver.org/). `rabun-git --version` reports the crate version baked in at build time.
 
 ## User guide
