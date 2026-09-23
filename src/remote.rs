@@ -432,6 +432,13 @@ pub fn copy_key(
     Ok(())
 }
 
+/// systemd working directory / data root on Ubuntu.
+const SERVICE_HOME: &str = "/var/lib/rabun-git";
+/// dotenv loaded by the host binary and by `key copy`.
+const SYSTEM_ENV: &str = "/etc/rabun-git/rabun-git.env";
+/// Default `RABUN_GIT_CONFIG` when the env file is missing.
+const SYSTEM_CONFIG: &str = "/etc/rabun-git/rabun-git.toml";
+
 /// Shell run on the host as `rabun-git` (tests).
 pub fn host_install_script(user: &str, openssh: &str, admin: bool) -> Result<String> {
     let user = shlex::try_quote(user).map_err(|err| anyhow::anyhow!("{err}"))?;
@@ -443,8 +450,10 @@ pub fn host_install_script(user: &str, openssh: &str, admin: bool) -> Result<Str
             "rabun-git user list | awk '{{print $1}}' | grep -qx {user} || rabun-git user add {user} >/dev/null"
         )
     };
+    // sudo -H keeps the SSH cwd (often /home/$USER). Without ROOT, rabun-git
+    // writes ./data/git and the service user cannot create it.
     Ok(format!(
-        "{ensure} && rabun-git key add {user} --literal {key} >/dev/null"
+        "cd {SERVICE_HOME} && ([ -r {SYSTEM_ENV} ] && set -a && . {SYSTEM_ENV} && set +a; :) && export RABUN_GIT_ROOT=\"${{RABUN_GIT_ROOT:-{SERVICE_HOME}}}\" RABUN_GIT_CONFIG=\"${{RABUN_GIT_CONFIG:-{SYSTEM_CONFIG}}}\" && {ensure} && rabun-git key add {user} --literal {key} >/dev/null"
     ))
 }
 
@@ -693,6 +702,8 @@ mod tests {
         assert!(ordinary.contains("user add ada"));
         assert!(!ordinary.contains("--admin"));
         assert!(ordinary.contains("grep -qx ada"));
+        assert!(admin.contains("cd /var/lib/rabun-git"));
+        assert!(admin.contains("RABUN_GIT_ROOT="));
         assert!(!admin.starts_with("set"));
         assert!(!admin.contains('\n'));
 
