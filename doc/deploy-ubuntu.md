@@ -44,7 +44,7 @@ rabun-git repo create ada/website
 exit
 ```
 
-`rabun-git shell` runs one `sudo` as the `rabun-git` user, then an interactive bash. `exit` ends the session. Mutating commands (`user`, `key`, `repo`, …) refuse to run as your login user so the service does not lose write access.
+`rabun-git shell` runs one `sudo` as the `rabun-git` user, then an interactive bash. The prompt is `(rabun-git) … $` for the whole session; `exit` ends it. Mutating commands (`user`, `key`, `repo`, …) refuse to run as your login user so the service does not lose write access.
 
 `rabun-git check` and `rabun-git status` still work outside the session. After the first admin key is registered, laptops can create more repos without sudo: `ssh -p 2222 git@HOST repo create ada/website`. `key add --file` still needs a path on the host, so the shell is the better first-time flow.
 

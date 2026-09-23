@@ -37,7 +37,7 @@ After the first admin key, `ssh -p 2222 git@HOST repo create ada/website` needs 
 | `rabun-git check` | Data root writable, `git` on PATH, SSH bind, admin with a key |
 | `rabun-git status` | Companion JSON (`rabun.companion/v1`), no keys |
 | `rabun-git serve [--bind HOST:PORT]` | Listen for git + management commands |
-| `rabun-git shell` | One sudo, then bash as the systemd user (`exit` to leave) |
+| `rabun-git shell` | One sudo, then bash as the systemd user (prompt `(rabun-git)`; `exit` to leave) |
 
 ## Users and keys
 

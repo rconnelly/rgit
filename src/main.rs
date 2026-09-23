@@ -18,6 +18,8 @@ const SYSTEM_ENV: &str = "/etc/rabun-git/rabun-git.env";
 const DEFAULT_RUN_AS: &str = "rabun-git";
 /// systemd working directory / forge root on Ubuntu.
 const SERVICE_HOME: &str = "/var/lib/rabun-git";
+/// Prompt while `rabun-git shell` is active (`RABUN_GIT_SHELL=1`).
+const SHELL_PS1: &str = r"\[\e[0;36m\](rabun-git)\[\e[0m\] \w \$ ";
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -76,23 +78,46 @@ async fn run() -> Result<()> {
 /// Interactive bash as the systemd user so operator commands own forge files.
 fn run_operator_shell() -> Result<()> {
     let target = run_as_user();
-    eprintln!("Forge operator as {target}. Type `exit` to leave the session.");
+    eprintln!("Forge operator as {target}. Prompt shows (rabun-git); type `exit` to leave.");
     if is_service_user() {
         let home = Path::new(SERVICE_HOME);
         if home.is_dir() {
             std::env::set_current_dir(home).with_context(|| format!("chdir {}", home.display()))?;
         }
-        let err = Command::new("/bin/bash").exec();
+        let err = operator_bash().exec();
         return Err(anyhow::anyhow!("exec /bin/bash: {err}"));
     }
-    let mut sudo = Command::new("sudo");
-    sudo.args(["-u", &target, "-H"]);
-    if Path::new(SERVICE_HOME).is_dir() {
-        sudo.args(["-D", SERVICE_HOME]);
-    }
-    sudo.args(["--", "/bin/bash"]);
-    let err = sudo.exec();
+    // Do not use sudo --chdir / -D: Ubuntu sudoers rejects it with /usr/bin/env.
+    let start = if Path::new(SERVICE_HOME).is_dir() {
+        format!("cd {SERVICE_HOME} && exec /bin/bash --norc --noprofile -i")
+    } else {
+        "exec /bin/bash --norc --noprofile -i".into()
+    };
+    let err = Command::new("sudo")
+        .args([
+            "-u",
+            &target,
+            "-H",
+            "--",
+            "env",
+            "RABUN_GIT_SHELL=1",
+            &format!("PS1={SHELL_PS1}"),
+            "/bin/bash",
+            "--norc",
+            "--noprofile",
+            "-c",
+            &start,
+        ])
+        .exec();
     Err(anyhow::anyhow!("exec sudo -u {target} bash: {err}"))
+}
+
+fn operator_bash() -> Command {
+    let mut bash = Command::new("/bin/bash");
+    bash.env("RABUN_GIT_SHELL", "1")
+        .env("PS1", SHELL_PS1)
+        .args(["--norc", "--noprofile", "-i"]);
+    bash
 }
 
 fn run_as_user() -> String {

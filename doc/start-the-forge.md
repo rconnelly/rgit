@@ -93,7 +93,7 @@ Open **TCP 2222** on the firewall if laptops are not on the same machine. Port *
 
 On first start, the forge writes an SSH host key at `$RABUN_GIT_ROOT/ssh_host_ed25519_key`. Laptops will ask you to trust that host key the first time they connect.
 
-For a systemd unit and pack/push, see [deploy Ubuntu](deploy-ubuntu.md) and [architecture.md](architecture.md#systemd). On that install, run operator commands inside `rabun-git shell` (one sudo, then `rabun-git user add …` with no prefix).
+For a systemd unit and pack/push, see [deploy Ubuntu](deploy-ubuntu.md) and [architecture.md](architecture.md#systemd). On that install, run operator commands inside `rabun-git shell` (one sudo, prompt `(rabun-git)`, then `rabun-git user add …` with no prefix).
 
 ## 6. Smoke-test SSH from a laptop
 
