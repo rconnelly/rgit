@@ -14,8 +14,9 @@ If you know `git clone`, `git commit`, and `git push`, start at the top and foll
 6. [Everyday git](everyday-git.md) — clone, branches, protected `main` / `master`, local `rgit view`
 7. [Merge requests](merge-requests.md) — propose, review, fast-forward merge
 8. [CI workflows](ci-workflows.md) — `.rabun/workflows` on push, tag, and request
-9. [Command reference](commands.md) — CLI and SSH cheat sheet
-10. [Compared to GitHub](compared-to-github.md) — feature and `gh` command gap analysis
+9. [Versioning](versioning.md) — SemVer, Conventional Commits, changelog, `rgit version`
+10. [Command reference](commands.md) — CLI and SSH cheat sheet
+11. [Compared to GitHub](compared-to-github.md) — feature and `gh` command gap analysis
 
 Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md).
 

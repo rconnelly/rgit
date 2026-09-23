@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+### Added
+
+- `rgit version` on this machine: SemVer 2.0 bumps, Conventional Commits 1.0.0 checks, Keep a Changelog updates, and a `chore(release):` commit plus annotated tag
+- Forge `hooks/update` opt-in policy via `.rabun/version.toml` (`enforce.commits` / `tags` / `manifests`)
+- Version files: `Cargo.toml` / `Cargo.lock`, `package.json` / `package-lock.json`, `pyproject.toml`, `composer.json`, `pubspec.yaml`, `Chart.yaml`, `VERSION` / `version.txt`
+
 ## [0.12.1] - 2026-09-23
 
 ### Fixed

@@ -14,6 +14,42 @@ pub fn crate_git_tag() -> String {
     format!("v{}", crate_version())
 }
 
+/// Increment to apply to a SemVer 2.0 version.
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum Bump {
+    /// Increment PATCH; reset pre-release and build.
+    Patch,
+    /// Increment MINOR; reset PATCH, pre-release, and build.
+    Minor,
+    /// Increment MAJOR; reset MINOR, PATCH, pre-release, and build.
+    Major,
+}
+
+impl Bump {
+    /// `patch`, `minor`, or `major`.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Bump::Patch => "patch",
+            Bump::Minor => "minor",
+            Bump::Major => "major",
+        }
+    }
+}
+
+/// Next version after `level`. Pre-release and build metadata are stripped.
+pub fn bump(version: &Version, level: Bump) -> Version {
+    match level {
+        Bump::Major => Version::new(version.major + 1, 0, 0),
+        Bump::Minor => Version::new(version.major, version.minor + 1, 0),
+        Bump::Patch => Version::new(version.major, version.minor, version.patch + 1),
+    }
+}
+
+/// Git tag for `version` using `prefix` (usually `v`).
+pub fn tag_for(version: &Version, prefix: &str) -> String {
+    format!("{prefix}{version}")
+}
+
 /// Parse a version or git tag as SemVer 2.0.0.
 ///
 /// A single leading `v` or `V` is allowed (git tag convention). It is not part
@@ -98,5 +134,17 @@ mod tests {
         assert!(is_upgrade("1.0.0-alpha", "1.0.0").unwrap());
         assert!(!is_upgrade("v1.0.0", "v1.0.0").unwrap());
         assert!(!is_upgrade("v1.2.0", "v1.1.9").unwrap());
+    }
+
+    #[test]
+    fn bump_strips_prerelease_and_resets_lower() {
+        let v = parse("1.2.3-alpha.1+build").unwrap();
+        assert_eq!(bump(&v, Bump::Patch), Version::new(1, 2, 4));
+        assert_eq!(bump(&v, Bump::Minor), Version::new(1, 3, 0));
+        assert_eq!(bump(&v, Bump::Major), Version::new(2, 0, 0));
+        assert_eq!(tag_for(&Version::new(0, 12, 1), "v"), "v0.12.1");
+        assert!(Bump::Patch < Bump::Minor);
+        assert!(Bump::Minor < Bump::Major);
+        assert_eq!(Bump::Patch.as_str(), "patch");
     }
 }

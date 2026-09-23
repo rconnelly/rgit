@@ -146,5 +146,7 @@ jobs:
     std::env::remove_var("RABUN_GIT_USER");
     std::env::remove_var("RABUN_GIT_REPO");
     std::env::remove_var("RABUN_GIT_ROOT");
-    rabun_git::hook::update("refs/heads/master", "0", "abc").unwrap();
+    rabun_git::hook::update("refs/heads/master", "0", "abc")
+        .await
+        .unwrap();
 }

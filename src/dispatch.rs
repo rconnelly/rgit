@@ -20,7 +20,7 @@ pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<
         Commands::Access { command } => access(store, actor, command),
         Commands::Request { command } => request_cmd(store, actor, command).await,
         Commands::Run { command } => run_cmd(store, actor, command),
-        Commands::Hook { command } => hook_cmd(command),
+        Commands::Hook { command } => hook_cmd(command).await,
         Commands::Agent {
             command: Some(command),
             ..
@@ -29,6 +29,7 @@ pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<
         | Commands::Check
         | Commands::Status
         | Commands::View { .. }
+        | Commands::Version { .. }
         | Commands::Serve { .. }
         | Commands::Shell
         | Commands::Remote { .. }
@@ -252,10 +253,14 @@ fn run_cmd(store: &Store, actor: &Actor, command: RunCommands) -> Result<String>
     }
 }
 
-fn hook_cmd(command: HookCommands) -> Result<String> {
+async fn hook_cmd(command: HookCommands) -> Result<String> {
     match command {
         HookCommands::Update { refname, old, new } => {
-            hook::update(&refname, &old, &new)?;
+            hook::update(&refname, &old, &new).await?;
+            Ok(String::new())
+        }
+        HookCommands::CommitMsg { path } => {
+            hook::commit_msg(&path)?;
             Ok(String::new())
         }
     }

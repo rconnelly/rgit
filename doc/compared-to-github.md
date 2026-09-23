@@ -47,7 +47,7 @@ A shorter map lives in [What is Rabun Git?](what-it-is.md).
 | --- | --- |
 | Web UI, mobile app, Codespaces | Local `rgit view` (Zola on loopback). No hosted gitweb, mobile app, or Codespaces |
 | Issues, Discussions, Projects, Wikis, Pages | None |
-| Packages, Releases, Gists | None (git tags exist; no release artifacts) |
+| Packages, Releases, Gists | `rgit version release` for SemVer tags, changelog, and manifest bumps on this machine. No forge-hosted release artifacts or packages |
 | Dependabot, security advisories, code scanning | None |
 | Notifications, webhooks, GitHub Apps, OAuth | Companion heartbeat only (`rgit status` / loopback `/health`) |
 | Forks, compare view | No forks; clone the same `owner/name` if you have access |
@@ -63,13 +63,13 @@ A shorter map lives in [What is Rabun Git?](what-it-is.md).
 | `gh ssh-key add` | `rgit origin key copy` (first key) or `key add USER --file ~/.ssh/id_ed25519.pub` |
 | `gh pr create` / `list` / `view` / `review` / `merge` | `request create` / `list` / `show` / `review` / `merge` |
 | `gh run list` / `view` | `run list` / `show` / `logs` |
-| `gh api`, `gh issue`, `gh release`, `gh gist`, … | None |
+| `gh api`, `gh issue`, `gh release`, `gh gist`, … | `rgit version release` covers local tagging/changelog; no GitHub Releases product on the forge |
 
 ## Host-only commands
 
 These run the forge. They are not GitHub product analogues:
 
-`init`, `check`, `serve`, `shell`, Ubuntu [pack and push](deploy-ubuntu.md).
+`init`, `check`, `serve`, `shell`, `version`, Ubuntu [pack and push](deploy-ubuntu.md).
 
 ## Practical takeaway
 

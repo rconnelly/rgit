@@ -87,6 +87,11 @@ pub enum Commands {
         #[arg(long)]
         open: bool,
     },
+    /// SemVer 2.0, Conventional Commits, and CHANGELOG.md (this machine)
+    Version {
+        #[command(subcommand)]
+        command: VersionCommands,
+    },
     /// SSH git + management commands (loopback health)
     Serve {
         /// SSH bind (overrides config / `RABUN_GIT_SSH_BIND`)
@@ -405,7 +410,7 @@ pub enum RemoteCommands {
 /// Internal git hook entrypoints.
 #[derive(Subcommand)]
 pub enum HookCommands {
-    /// `hooks/update` — reject protected branch pushes for non-admins
+    /// `hooks/update` — ACL plus optional version policy
     Update {
         /// Ref being updated
         refname: String,
@@ -414,6 +419,82 @@ pub enum HookCommands {
         /// New object name
         new: String,
     },
+    /// `hooks/commit-msg` — require Conventional Commits 1.0.0
+    CommitMsg {
+        /// Path to the commit message file
+        path: PathBuf,
+    },
+}
+
+/// `rgit version` subcommands (working tree; not over SSH).
+#[derive(Subcommand)]
+pub enum VersionCommands {
+    /// Print the agreed version and files
+    Show,
+    /// Validate Conventional Commits in a revision range
+    Check {
+        /// Git revision range (default: last version tag..HEAD)
+        range: Option<String>,
+    },
+    /// Rewrite version files only
+    Bump {
+        /// `auto`, `patch`, `minor`, or `major` (default: auto)
+        #[arg(value_enum)]
+        level: Option<VersionBump>,
+        /// Set this SemVer 2.0 version instead of incrementing
+        #[arg(long)]
+        to: Option<String>,
+        /// Print the plan without writing files
+        #[arg(long)]
+        dry_run: bool,
+    },
+    /// Preview Keep a Changelog notes from commits
+    Changelog {
+        /// Start tag (default: nearest version tag)
+        #[arg(long)]
+        from: Option<String>,
+    },
+    /// Bump files, update CHANGELOG.md, commit, and tag
+    Release {
+        /// `auto`, `patch`, `minor`, or `major` (default: auto)
+        #[arg(value_enum)]
+        level: Option<VersionBump>,
+        /// Set this SemVer 2.0 version instead of incrementing
+        #[arg(long)]
+        to: Option<String>,
+        /// Print the plan without writing files
+        #[arg(long)]
+        dry_run: bool,
+        /// Update files and commit without creating a git tag
+        #[arg(long)]
+        no_tag: bool,
+    },
+    /// Install a local `commit-msg` hook
+    Hook {
+        #[command(subcommand)]
+        command: VersionHookCommands,
+    },
+}
+
+/// `rgit version hook` subcommands.
+#[derive(Subcommand)]
+pub enum VersionHookCommands {
+    /// Write `.git/hooks/commit-msg`
+    Install,
+}
+
+/// SemVer increment, or infer from Conventional Commits.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, clap::ValueEnum)]
+pub enum VersionBump {
+    /// Infer from `feat` / `fix` / `perf` / breaking commits since the last tag
+    #[default]
+    Auto,
+    /// Increment PATCH
+    Patch,
+    /// Increment MINOR
+    Minor,
+    /// Increment MAJOR
+    Major,
 }
 
 impl Commands {
@@ -425,6 +506,7 @@ impl Commands {
                 | Commands::Check
                 | Commands::Status
                 | Commands::View { .. }
+                | Commands::Version { .. }
                 | Commands::Serve { .. }
                 | Commands::Shell
                 | Commands::Remote { .. }
@@ -482,6 +564,14 @@ mod tests {
             git_ref: "HEAD".into(),
             bind: "127.0.0.1:1111".into(),
             open: false,
+        }
+        .requires_service_uid());
+        assert!(Commands::Version {
+            command: VersionCommands::Show
+        }
+        .ssh_forbidden());
+        assert!(!Commands::Version {
+            command: VersionCommands::Show
         }
         .requires_service_uid());
         assert!(Commands::Remote {

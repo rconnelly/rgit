@@ -26,7 +26,7 @@ rgit origin repo list
 rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```
 
-Versions follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html). `Cargo.toml` is `MAJOR.MINOR.PATCH` (optional pre-release and build metadata). Git tags are `v` plus that version (`v0.12.1`) and must match. `rgit --version` reports the crate version baked in at build time. Pushing a matching tag publishes Linux archives on [GitHub Releases](https://github.com/rconnelly/rgit/releases).
+Versions follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html). `Cargo.toml` is `MAJOR.MINOR.PATCH` (optional pre-release and build metadata). Git tags are `v` plus that version (`v0.12.1`) and must match. Use `rgit version release` to bump files, `CHANGELOG.md`, and the tag together ([versioning](doc/versioning.md)). `rgit --version` reports the crate version baked in at build time. Pushing a matching tag publishes Linux archives on [GitHub Releases](https://github.com/rconnelly/rgit/releases).
 
 ## User guide
 
@@ -42,6 +42,7 @@ The guide is written for people who know basic git (commits, branches, remotes) 
 | [Everyday git](doc/everyday-git.md) | Clone, branch, protected `main` / `master`, local `rgit view` |
 | [Merge requests](doc/merge-requests.md) | Open, review, and fast-forward merge |
 | [CI workflows](doc/ci-workflows.md) | `.rabun/workflows` on push, tag, and request |
+| [Versioning](doc/versioning.md) | SemVer, Conventional Commits, changelog, `rgit version` |
 | [Command reference](doc/commands.md) | Every CLI and SSH command |
 | [Compared to GitHub](doc/compared-to-github.md) | Feature and `gh` command gap analysis |
 

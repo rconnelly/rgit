@@ -99,6 +99,11 @@ async fn run() -> Result<()> {
             )
             .await
         }
+        Commands::Version { command } => {
+            let out = rabun_git::release::run(command).await?;
+            print!("{out}");
+            Ok(())
+        }
         Commands::Serve { bind } => {
             let config = Config::load(cli.config.as_deref())?;
             rabun_git::serve(&config, bind).await

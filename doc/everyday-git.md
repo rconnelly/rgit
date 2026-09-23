@@ -49,10 +49,16 @@ Git still stores commits on **this machine** until you push.
 ```bash
 # edit files
 git add README.md
-git commit -m "Explain the setup"
+git commit -m "docs: explain the setup"
 ```
 
-Write a short message in the present tense (“Explain”, not “Explained”). Nothing is on the server yet.
+Write a Conventional Commits 1.0.0 subject (`feat:`, `fix:`, `docs:`, …). `rgit version hook install` checks that on this machine; a repo with `.rabun/version.toml` `enforce.commits` also checks on push. Details: [Versioning](versioning.md).
+
+To cut a release (bump version files, `CHANGELOG.md`, commit, tag) without pushing:
+
+```bash
+rgit version release
+```
 
 ## Update from the server
 
@@ -99,12 +105,14 @@ Useful to see incoming commits before you `git pull`.
 
 ## Tags
 
+Prefer `rgit version release`, which writes an annotated `vMAJOR.MINOR.PATCH` tag that matches the version files. You can still tag by hand:
+
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Need **write**. Tag pushes can start [CI workflows](ci-workflows.md) if a workflow file has `on: tag:`.
+Need **write**. If the repo has `.rabun/version.toml` with `enforce.tags`, the name must be SemVer 2.0 with the configured prefix. Tag pushes can start [CI workflows](ci-workflows.md) if a workflow file has `on: tag:`.
 
 ## SSH management without git
 
@@ -123,4 +131,4 @@ A login SSH session (no command) prints a greeting and the repos you can read.
 
 First connection to port 2222 shows a fingerprint for the forge host key (`$RABUN_GIT_ROOT/ssh_host_ed25519_key`). Compare with what the operator expects, then type `yes`. This is the same check as the first `ssh git@github.com`.
 
-Next: [Merge requests](merge-requests.md).
+Next: [Merge requests](merge-requests.md), or [Versioning](versioning.md).

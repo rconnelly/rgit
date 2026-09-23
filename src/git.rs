@@ -1,7 +1,7 @@
 //! Spawn system `git`. No git2/gix.
 
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
 
 use anyhow::{bail, Context, Result};
@@ -169,6 +169,99 @@ pub async fn show_path(repo: &Path, sha: &str, path: &str) -> Result<Option<Stri
         return Ok(None);
     }
     Ok(Some(String::from_utf8_lossy(&output.stdout).into_owned()))
+}
+
+/// True when `oid` is a git zero SHA (new or deleted ref).
+pub fn is_zero_oid(oid: &str) -> bool {
+    !oid.is_empty() && oid.chars().all(|c| c == '0')
+}
+
+/// Work tree root (`rev-parse --show-toplevel`) for a path inside a repo.
+pub async fn work_tree_root(dir: &Path) -> Result<PathBuf> {
+    git_stdout(dir, &["rev-parse", "--show-toplevel"])
+        .await
+        .map(PathBuf::from)
+}
+
+/// Path inside `.git` (`rev-parse --git-path`), made absolute using `dir`.
+pub async fn git_path(dir: &Path, spec: &str) -> Result<PathBuf> {
+    let raw = git_stdout(dir, &["rev-parse", "--git-path", spec]).await?;
+    let path = PathBuf::from(raw);
+    if path.is_absolute() {
+        Ok(path)
+    } else {
+        Ok(dir.join(path))
+    }
+}
+
+/// Raw commit message (`git log -1 --format=%B`).
+pub async fn commit_message(repo: &Path, sha: &str) -> Result<String> {
+    git_stdout(repo, &["log", "-1", "--format=%B", sha]).await
+}
+
+/// Peel a tag or commit-ish to a commit object name.
+pub async fn peel_commit(repo: &Path, spec: &str) -> Result<String> {
+    let peeled = format!("{spec}^{{commit}}");
+    git_stdout(repo, &["rev-parse", "--verify", &peeled]).await
+}
+
+/// `git rev-list` object names (one per line).
+pub async fn rev_list(repo: &Path, extra: &[&str]) -> Result<Vec<String>> {
+    let mut args = Vec::with_capacity(extra.len() + 1);
+    args.push("rev-list");
+    args.extend_from_slice(extra);
+    let stdout = git_stdout(repo, &args).await?;
+    Ok(stdout
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(str::to_string)
+        .collect())
+}
+
+/// Commits introduced by updating `old` → `new` (no merges, oldest first).
+pub async fn new_commits(repo: &Path, old: &str, new: &str) -> Result<Vec<String>> {
+    if is_zero_oid(new) {
+        return Ok(Vec::new());
+    }
+    if is_zero_oid(old) {
+        rev_list(repo, &["--no-merges", "--reverse", new, "--not", "--all"]).await
+    } else {
+        let range = format!("{old}..{new}");
+        rev_list(repo, &["--no-merges", "--reverse", &range]).await
+    }
+}
+
+/// Nearest ancestor tag matching `prefix*` (`v*`), if any.
+pub async fn nearest_version_tag(repo: &Path, prefix: &str) -> Result<Option<String>> {
+    let pattern = format!("{prefix}*");
+    let output = git_output_raw(
+        repo,
+        &["describe", "--tags", "--abbrev=0", "--match", &pattern],
+    )
+    .await?;
+    if !output.status.success() {
+        return Ok(None);
+    }
+    let tag = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if tag.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(tag))
+    }
+}
+
+/// `git remote get-url`, or `None` when the remote is missing.
+pub async fn remote_url(repo: &Path, name: &str) -> Result<Option<String>> {
+    let output = git_output_raw(repo, &["remote", "get-url", name]).await?;
+    if !output.status.success() {
+        return Ok(None);
+    }
+    let url = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if url.is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(url))
+    }
 }
 
 /// File names under `prefix` at `sha`.

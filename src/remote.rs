@@ -15,7 +15,7 @@ use crate::store::atomic_write;
 /// Commands that cannot be used as a remote name.
 pub const RESERVED_NAMES: &[&str] = &[
     "init", "check", "status", "view", "serve", "shell", "user", "key", "repo", "access",
-    "request", "run", "hook", "remote", "help", "agent",
+    "request", "run", "hook", "remote", "help", "agent", "version",
 ];
 
 /// Parsed SSH target for a named remote.
