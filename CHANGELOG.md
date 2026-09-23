@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-09-23
+
+### Added
+
+- **view:** highlight Browse /tree, copyable clone URL, and cleaner commits
+
 ## [0.13.0] - 2026-09-23
 
 ### Added
@@ -55,7 +61,9 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 - Companion heartbeat (`rabun.companion/v1`): `status.json`, `rabun-git status`, loopback `GET /health`
 
 
-[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.13.0...HEAD
+
+[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/rconnelly/rgit/releases/tag/v0.14.0
 [0.13.0]: https://github.com/rconnelly/rgit/releases/tag/v0.13.0
 [0.12.1]: https://github.com/rconnelly/rgit/releases/tag/v0.12.1
 [0.12.0]: https://github.com/rconnelly/rgit/releases/tag/v0.12.0
