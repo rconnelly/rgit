@@ -412,6 +412,7 @@ pub fn copy_key(
     };
     let script = host_install_script(&user, &text, admin)?;
     let mut ssh = Command::new("ssh");
+    ssh.arg("-q");
     ssh.arg("-t");
     if let Some(identity) = identity {
         ssh.arg("-i").arg(identity);
@@ -425,22 +426,17 @@ pub fn copy_key(
     ssh.arg("-H");
     ssh.arg("--");
     ssh.arg("/bin/bash");
-    ssh.arg("-lc");
+    ssh.arg("--noprofile");
+    ssh.arg("--norc");
+    ssh.arg("-c");
     ssh.arg(&script);
-    eprintln!(
-        "Copying {} to {} as {user} via {}@{}:{} (sudo on the host)",
-        path.display(),
-        invoke.name,
-        admin_target.user,
-        admin_target.host,
-        admin_target.port
-    );
     let status = ssh
         .status()
         .with_context(|| format!("run ssh {}@{}", admin_target.user, admin_target.host))?;
     if !status.success() {
         std::process::exit(status.code().unwrap_or(1));
     }
+    eprintln!("copied key for {user} to {}", invoke.name);
     Ok(())
 }
 
@@ -449,14 +445,14 @@ pub fn host_install_script(user: &str, openssh: &str, admin: bool) -> Result<Str
     let user = shlex::try_quote(user).map_err(|err| anyhow::anyhow!("{err}"))?;
     let key = shlex::try_quote(openssh.trim()).map_err(|err| anyhow::anyhow!("{err}"))?;
     let ensure = if admin {
-        format!("rabun-git user add {user} --admin")
+        format!("rabun-git user add {user} --admin >/dev/null")
     } else {
         format!(
-            "rabun-git user list | awk '{{print $1}}' | grep -qx {user} || rabun-git user add {user}"
+            "rabun-git user list | awk '{{print $1}}' | grep -qx {user} || rabun-git user add {user} >/dev/null"
         )
     };
     Ok(format!(
-        "set -e\n{ensure}\nrabun-git key add {user} --literal {key}\n"
+        "set -e\n{ensure}\nrabun-git key add {user} --literal {key} >/dev/null\n"
     ))
 }
 
@@ -681,8 +677,9 @@ mod tests {
     #[test]
     fn host_install_script_quotes_key() {
         let admin = host_install_script("ryan", "ssh-ed25519 AAAA comment", true).unwrap();
-        assert!(admin.contains("user add ryan --admin"));
+        assert!(admin.contains("user add ryan --admin >/dev/null"));
         assert!(admin.contains("key add ryan --literal"));
+        assert!(admin.contains(">/dev/null"));
         assert!(admin.contains("ssh-ed25519 AAAA comment"));
         let ordinary = host_install_script("ada", "ssh-ed25519 BBBB", false).unwrap();
         assert!(ordinary.contains("user add ada"));
