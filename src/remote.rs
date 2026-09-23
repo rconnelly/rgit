@@ -411,6 +411,7 @@ pub fn copy_key(
         None => invoke.admin.clone(),
     };
     let script = host_install_script(&user, &text, admin)?;
+    let remote = copy_remote_command(&script)?;
     let mut ssh = Command::new("ssh");
     ssh.arg("-q");
     ssh.arg("-t");
@@ -420,16 +421,7 @@ pub fn copy_key(
     ssh.arg("-p").arg(admin_target.port.to_string());
     ssh.arg(format!("{}@{}", admin_target.user, admin_target.host));
     ssh.arg("--");
-    ssh.arg("sudo");
-    ssh.arg("-u");
-    ssh.arg("rabun-git");
-    ssh.arg("-H");
-    ssh.arg("--");
-    ssh.arg("/bin/bash");
-    ssh.arg("--noprofile");
-    ssh.arg("--norc");
-    ssh.arg("-c");
-    ssh.arg(&script);
+    ssh.arg(&remote);
     let status = ssh
         .status()
         .with_context(|| format!("run ssh {}@{}", admin_target.user, admin_target.host))?;
@@ -452,8 +444,24 @@ pub fn host_install_script(user: &str, openssh: &str, admin: bool) -> Result<Str
         )
     };
     Ok(format!(
-        "set -e\n{ensure}\nrabun-git key add {user} --literal {key} >/dev/null\n"
+        "{ensure} && rabun-git key add {user} --literal {key} >/dev/null"
     ))
+}
+
+/// One ssh remote argument: sudo + bash -c with the script quoted.
+fn copy_remote_command(script: &str) -> Result<String> {
+    quote_payload(&[
+        "sudo".into(),
+        "-u".into(),
+        "rabun-git".into(),
+        "-H".into(),
+        "--".into(),
+        "/bin/bash".into(),
+        "--noprofile".into(),
+        "--norc".into(),
+        "-c".into(),
+        script.to_string(),
+    ])
 }
 
 fn default_pub_file() -> Result<PathBuf> {
@@ -685,6 +693,15 @@ mod tests {
         assert!(ordinary.contains("user add ada"));
         assert!(!ordinary.contains("--admin"));
         assert!(ordinary.contains("grep -qx ada"));
+        assert!(!admin.starts_with("set"));
+        assert!(!admin.contains('\n'));
+
+        let remote = copy_remote_command(&admin).unwrap();
+        let split = shlex::split(&remote).unwrap();
+        assert_eq!(split[0], "sudo");
+        assert_eq!(split[split.len() - 2], "-c");
+        assert_eq!(split.last().unwrap(), &admin);
+        assert!(split.last().unwrap().contains("ssh-ed25519 AAAA comment"));
     }
 
     #[test]
