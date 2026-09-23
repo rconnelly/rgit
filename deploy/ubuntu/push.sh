@@ -129,7 +129,13 @@ target_triple() {
 }
 
 latest_stable_tag() {
-  gh release view --repo "$REPO" --json tagName --jq .tagName
+  local tag
+  tag="$(gh release list --repo "$REPO" --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName // empty')"
+  if [[ -z "$tag" ]]; then
+    echo "no stable GitHub Release on ${REPO}; pass a tag or use --pack / --archive" >&2
+    exit 1
+  fi
+  echo "$tag"
 }
 
 pack_checkout() {

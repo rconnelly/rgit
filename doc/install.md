@@ -21,7 +21,7 @@ On Debian/Ubuntu you can install the C compiler and git with the repo script:
 
 ```bash
 git clone https://github.com/rconnelly/rgit.git
-cd rabun-git
+cd rgit
 ./scripts/install.sh
 ```
 
@@ -46,6 +46,15 @@ Pack this checkout and copy it onto a server over SSH (the host never talks to G
 ./deploy/ubuntu/push.sh --pack --bootstrap user@HOST
 ./deploy/ubuntu/push.sh --pack user@HOST
 ```
+
+From a [GitHub Release](https://github.com/rconnelly/rgit/releases) (latest stable SemVer tag if you omit the version):
+
+```bash
+./deploy/ubuntu/push.sh --bootstrap user@HOST
+./deploy/ubuntu/push.sh --bootstrap user@HOST v0.12.0
+```
+
+Release tags are SemVer 2.0.0 with a `v` prefix and must match `Cargo.toml` (`v0.12.0`). Pushing that tag on GitHub runs `.github/workflows/release.yml`, which packs `rabun-git-<tag>-x86_64-unknown-linux-gnu.tar.gz` and attaches it to the release.
 
 Layout, systemd, and first admin user: [deploy Ubuntu](deploy-ubuntu.md).
 

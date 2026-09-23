@@ -262,19 +262,10 @@ mod tests {
 
     #[test]
     fn crate_version_is_semver() {
-        let version = env!("CARGO_PKG_VERSION");
-        let core = version.split(['-', '+']).next().expect("semver core");
-        let mut parts = core.split('.');
-        for label in ["major", "minor", "patch"] {
-            parts
-                .next()
-                .unwrap_or_else(|| panic!("missing {label}"))
-                .parse::<u64>()
-                .unwrap_or_else(|_| panic!("{label} must be a number"));
-        }
-        assert!(
-            parts.next().is_none(),
-            "semver core must be major.minor.patch"
+        rabun_git::version::parse(env!("CARGO_PKG_VERSION")).unwrap();
+        assert_eq!(
+            rabun_git::version::crate_git_tag(),
+            format!("v{}", env!("CARGO_PKG_VERSION"))
         );
     }
 }

@@ -1546,6 +1546,7 @@ dependencies = [
  "indexmap",
  "rand",
  "russh",
+ "semver",
  "serde",
  "serde_json",
  "serde_yml",

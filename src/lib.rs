@@ -22,6 +22,7 @@ pub mod setup;
 pub mod ssh;
 pub mod status;
 pub mod store;
+pub mod version;
 pub mod view;
 pub mod workflow;
 

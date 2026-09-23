@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+- GitHub Actions release workflow: a SemVer 2.0.0 tag (`vMAJOR.MINOR.PATCH`) publishes Linux archives to GitHub Releases
 
 ## [0.12.0] - 2026-09-23
 
@@ -32,3 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI merge requests stored as `refs/rabun/requests/<id>/{head,base,meta}` (fast-forward merge)
 - In-repo YAML workflows (`.rabun/workflows`) on push, tag, and request
 - Companion heartbeat (`rabun.companion/v1`): `status.json`, `rabun-git status`, loopback `GET /health`
+
+[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/rconnelly/rgit/releases/tag/v0.12.0
+[0.1.0]: https://github.com/rconnelly/rgit/releases/tag/v0.1.0

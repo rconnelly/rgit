@@ -15,6 +15,7 @@ use serde_json::{Map, Value};
 
 use crate::config::Config;
 use crate::now_iso;
+use crate::version;
 
 /// JSON schema id for companion heartbeats.
 pub const SCHEMA: &str = "rabun.companion/v1";
@@ -96,7 +97,7 @@ impl CompanionStatus {
             ok: false,
             name: APP_NAME.into(),
             command: env!("CARGO_PKG_NAME").into(),
-            version: env!("CARGO_PKG_VERSION").into(),
+            version: version::crate_version().into(),
             unit: Some(UNIT_NAME.into()),
             pid: None,
             uptime_seconds: None,
@@ -119,7 +120,7 @@ impl CompanionStatus {
             ok: true,
             name: APP_NAME.into(),
             command: env!("CARGO_PKG_NAME").into(),
-            version: env!("CARGO_PKG_VERSION").into(),
+            version: version::crate_version().into(),
             unit: Some(UNIT_NAME.into()),
             pid: Some(std::process::id()),
             uptime_seconds: Some(started_at.elapsed().as_secs()),

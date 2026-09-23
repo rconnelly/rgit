@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Require SemVer 2.0 tag matching Cargo.toml
+        id: semver
+        run: ./scripts/check-release-tag.sh "${GITHUB_REF_NAME}"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release
+
+      - name: Install Linux deps
+        run: ./scripts/install-linux-build-deps.sh
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --locked
+
+      - name: Pack Linux archive
+        run: ./deploy/ubuntu/pack.sh "${GITHUB_REF_NAME}"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ steps.semver.outputs.prerelease == 'true' }}
+          make_latest: ${{ steps.semver.outputs.prerelease != 'true' }}
+          files: |
+            dist/release/*.tar.gz
+            dist/release/*.sha256

@@ -11,7 +11,7 @@ rgit --identity ~/.ssh/id_ed25519 origin repo list
 # or: export RABUN_GIT_SSH_IDENTITY=~/.ssh/id_ed25519
 ```
 
-`rgit --version` prints the crate version.
+`rgit --version` prints the crate version (SemVer 2.0.0 from `Cargo.toml`). Git tags are `v` plus that version.
 
 On this machine, save a forge host once, then use that name as the first word (this is a **forge** alias, not a git remote):
 
