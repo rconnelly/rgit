@@ -32,9 +32,10 @@ Clone URL shape used throughout:
 ssh://git@git.example.com:2222/ada/website.git
 ```
 
-Forge commands from this machine (after the first admin key is on the host):
+Forge commands from this machine (`key copy` registers the first admin key over host SSH):
 
 ```bash
-rabun-git remote add origin git@git.example.com
-rabun-git origin repo list
+rgit remote add origin git@git.example.com
+rgit origin key copy ada --admin
+rgit origin repo list
 ```

@@ -17,7 +17,7 @@ What each path covers:
 | Install the `rabun-git` binary | yes (`/usr/local/bin`) | you install first ([install](install.md)) |
 | Data directory and config | yes (`/var/lib/rabun-git`, `/etc/rabun-git/`) | you run `init` |
 | First admin user | **no** — you add after | you run `user add` |
-| First SSH public key | **no** — you add after | you run `key add` |
+| First SSH public key | **no** — `rgit origin key copy` after | you run `key add` or `key copy` |
 | `rabun-git check` | optional after the key | you run `check` |
 | Start `serve` on port 2222 | yes (systemd, stays up) | you run `serve` in a terminal |
 | Open TCP 2222 | yes if `ufw` is already active | you open the firewall |
@@ -34,7 +34,14 @@ From this checkout (needs a C compiler and Cargo to pack; SSH to the host is pub
 
 That copies the binary, writes config, creates `/var/lib/rabun-git`, enables `rabun-git.service`, and starts `serve`. It does **not** create a forge user or register a key.
 
-On the **server**, add the first admin and key (files under `/var/lib/rabun-git` must stay owned by `rabun-git`):
+Register the first admin and key from this machine (host SSH + sudo) or on the server. Files under `/var/lib/rabun-git` must stay owned by `rabun-git`.
+
+```bash
+rgit remote add origin git@HOST
+rgit origin key copy ada --admin --file ~/.ssh/id_ed25519.pub
+```
+
+Or on the **server**:
 
 ```bash
 rabun-git shell
@@ -140,13 +147,15 @@ If you are setting this up from the same machine as the forge:
 rabun-git key add ada --file ~/.ssh/id_ed25519.pub
 ```
 
-The **first** admin key must be added on the host. After that, extra keys and every other forge command can run from this machine:
+The **first** admin key cannot go over git port 2222 (that port already requires a registered key). From this machine, copy it over host SSH (port 22). You need a login that can `sudo` on the host:
 
 ```bash
 rgit remote add origin git@git.example.com
-rgit origin key add ada --file ~/.ssh/id_ed25519.pub
+rgit origin key copy ada --admin --file ~/.ssh/id_ed25519.pub
 rgit origin repo list
 ```
+
+`key copy` SSHs as `$USER@<forge-host>:22` (override with `--host` or `remote add --host`), runs `sudo -u rabun-git`, creates the user if needed, and appends the public key. Extra keys after that can use `rgit origin key add` on port 2222.
 
 ## Smoke-test SSH from this machine
 
@@ -179,7 +188,7 @@ Then `ssh git.example.com` and `git clone git.example.com:ada/website.git` use p
 | `rabun-git: command not found` | `export PATH="$HOME/.cargo/bin:$PATH"` |
 | `git is not on PATH` | Install git; confirm `git --version` |
 | `no admin user` | `rabun-git user add YOURNAME --admin` |
-| `admin user(s) have no SSH keys` | `rabun-git key add YOURNAME --file KEY.pub` — must be a **.pub** file |
+| `admin user(s) have no SSH keys` | `rgit origin key copy YOURNAME --admin --file KEY.pub`, or `rabun-git key add` on the host — must be a **.pub** file |
 | SSH `Permission denied (publickey)` | Same private key as the `.pub` you registered; `ssh -p 2222 -i ~/.ssh/id_ed25519 git@HOST` |
 | Connection refused | `serve` is running (`rabun-git serve` or `systemctl status rabun-git`); firewall allows 2222; `--bind` matches the address you are using |
 | Wrong port | GitHub uses 22; Rabun Git uses **2222** unless you changed it |

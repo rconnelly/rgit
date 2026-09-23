@@ -76,6 +76,13 @@ Copy that one line to the server (file `linus.pub`) and **do not** copy the priv
 
 The **first** key for a new user must be added by an operator or forge admin (Linus cannot SSH in yet). After that, he can append extra keys himself.
 
+From this machine, over host SSH (port 22, needs sudo on the host):
+
+```bash
+rgit origin key copy linus --file ~/.ssh/id_ed25519.pub
+rgit origin key list linus
+```
+
 On the server (or copy the `.pub` to the server):
 
 ```bash
@@ -83,11 +90,11 @@ rabun-git key add linus --file /path/to/linus.pub
 rabun-git key list linus
 ```
 
-From this machine, if you already have an admin key, `--file` is read locally:
+From this machine, if you already have an admin key on port 2222, `--file` is read locally:
 
 ```bash
-rabun-git origin key add linus --file ~/.ssh/id_ed25519.pub
-rabun-git origin key list linus
+rgit origin key add linus --file ~/.ssh/id_ed25519.pub
+rgit origin key list linus
 ```
 
 `key list` prints fingerprints, not the key material. Only a forge admin can add keys for someone else.
@@ -220,11 +227,12 @@ They can no longer authenticate. Repositories they owned remain on disk; grant s
 | `user add` / `user list` / `user remove` | yes | yes | no | no |
 | `key add` / `key list` for themselves | yes | yes | yes | yes |
 | `key add` / `key list` for someone else | yes | yes | no | no |
+| `key copy` (this machine → host SSH) | yes (needs sudo on the host) | — | — | — |
 | `access grant` / `revoke` on a repo | yes | yes | yes (that repo) | no |
 | `repo create` `theirname/…` | yes | yes | if they are that user | yes |
 | `repo create` `other/…` | yes | yes | no | no |
 
-Commands that never work over SSH: `init`, `check`, `status`, `serve`. Use those on the host.
+Commands that never work over SSH: `init`, `check`, `status`, `serve`, `key copy`. `key copy` runs on this machine and uses host SSH (port 22).
 
 ## Where this is stored
 

@@ -86,6 +86,9 @@ fn key(store: &Store, actor: &Actor, command: KeyCommands) -> Result<String> {
                 Ok(fps.join("\n") + "\n")
             }
         }
+        KeyCommands::Copy { .. } => {
+            bail!("key copy is this-machine only; rgit origin key copy USER")
+        }
     }
 }
 

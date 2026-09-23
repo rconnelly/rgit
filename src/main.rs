@@ -8,7 +8,7 @@ use std::process::{Command, ExitCode};
 use anyhow::{bail, Context, Result};
 
 use rabun_git::acl::Actor;
-use rabun_git::cli::Commands;
+use rabun_git::cli::{Commands, KeyCommands};
 use rabun_git::config::Config;
 use rabun_git::remote;
 use rabun_git::store::Store;
@@ -94,6 +94,25 @@ fn run_named_remote(invoke: remote::ClientInvoke) -> Result<()> {
     let mut parse_from = vec![rabun_git::cli::invoked_name()];
     parse_from.extend(invoke.args.iter().cloned());
     let cli = rabun_git::cli::parse_from(&parse_from);
+    if let Commands::Key {
+        command:
+            KeyCommands::Copy {
+                user,
+                file,
+                admin,
+                host,
+            },
+    } = cli.command
+    {
+        return remote::copy_key(
+            &invoke,
+            user.as_deref(),
+            file.as_deref(),
+            admin,
+            host.as_deref(),
+            cli.identity.as_deref(),
+        );
+    }
     if cli.command.ssh_forbidden() {
         bail!("run this on the forge host, not through `{}`", invoke.name);
     }

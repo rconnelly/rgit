@@ -164,6 +164,20 @@ pub enum KeyCommands {
         /// Login name
         user: String,
     },
+    /// Copy a public key to a named remote over host SSH (port 22)
+    Copy {
+        /// Forge login (default: this machine's username)
+        user: Option<String>,
+        /// Public key file (default: `~/.ssh/id_ed25519.pub`)
+        #[arg(long)]
+        file: Option<PathBuf>,
+        /// Create the forge user as admin if missing
+        #[arg(long)]
+        admin: bool,
+        /// Host SSH (`user@HOST`, default `$USER@<forge-host>:22`)
+        #[arg(long)]
+        host: Option<String>,
+    },
 }
 
 /// `rabun-git repo` subcommands.
@@ -302,6 +316,9 @@ pub enum RemoteCommands {
         /// SSH private key for this remote
         #[arg(long)]
         identity: Option<PathBuf>,
+        /// Host SSH for `key copy` (`user@HOST`, default `$USER@<forge-host>:22`)
+        #[arg(long)]
+        host: Option<String>,
     },
     /// List saved remotes
     List,
@@ -343,6 +360,9 @@ impl Commands {
                 | Commands::Shell
                 | Commands::Remote { .. }
                 | Commands::Hook { .. }
+                | Commands::Key {
+                    command: KeyCommands::Copy { .. },
+                }
         )
     }
 
@@ -352,11 +372,13 @@ impl Commands {
             self,
             Commands::Init
                 | Commands::User { .. }
-                | Commands::Key { .. }
                 | Commands::Repo { .. }
                 | Commands::Access { .. }
                 | Commands::Request { .. }
                 | Commands::Run { .. }
+                | Commands::Key {
+                    command: KeyCommands::Add { .. } | KeyCommands::List { .. },
+                }
         )
     }
 }
@@ -380,6 +402,24 @@ mod tests {
         .ssh_forbidden());
         assert!(!Commands::Remote {
             command: RemoteCommands::List
+        }
+        .requires_service_uid());
+        assert!(Commands::Key {
+            command: KeyCommands::Copy {
+                user: None,
+                file: None,
+                admin: false,
+                host: None,
+            }
+        }
+        .ssh_forbidden());
+        assert!(!Commands::Key {
+            command: KeyCommands::Copy {
+                user: None,
+                file: None,
+                admin: false,
+                host: None,
+            }
         }
         .requires_service_uid());
     }

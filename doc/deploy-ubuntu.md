@@ -34,7 +34,17 @@ First-time from a GitHub Release (latest stable if you omit the tag):
 
 `--pack` needs **pkg-config**, a C compiler, git, and Cargo (`./scripts/install-linux-build-deps.sh`). It names the archive with `git describe --tags --always --dirty` unless you pass a tag. Combine `--pack` with `--bootstrap` for a first-time host from this checkout.
 
-After bootstrap, open an operator session and add a forge admin (files under `/var/lib/rabun-git` must stay owned by `rabun-git`):
+After bootstrap, register the first admin from this machine (host SSH + sudo) or in an operator session on the host. Files under `/var/lib/rabun-git` must stay owned by `rabun-git`.
+
+From this machine:
+
+```bash
+rgit remote add origin git@HOST
+rgit origin key copy ada --admin --file ~/.ssh/id_ed25519.pub
+rgit origin repo create ada/website
+```
+
+On the host:
 
 ```bash
 rabun-git shell          # or: sudo rabun-git shell
@@ -46,7 +56,7 @@ exit
 
 `rabun-git shell` runs one `sudo` as the `rabun-git` user, then an interactive bash. The prompt is `(rabun-git) … $` for the whole session; `exit` ends it. Mutating commands (`user`, `key`, `repo`, …) refuse to run as your login user so the service does not lose write access.
 
-`rabun-git check` and `rabun-git status` still work outside the session. After the first admin key is registered, this machine can create more repos without sudo: `rgit origin repo create ada/website` or `ssh -p 2222 git@HOST repo create ada/website`. `key add --file` on the host still needs a path there; from this machine, `--file` is read locally.
+`rabun-git check` and `rabun-git status` still work outside the session. After the first admin key is registered, this machine can create more repos without sudo: `rgit origin repo create ada/website` or `ssh -p 2222 git@HOST repo create ada/website`. `key add --file` on the host still needs a path there; from this machine, `--file` is read locally. `key copy` always uses host SSH (port 22), not git port 2222.
 
 `rabun-git` loads `/etc/rabun-git/rabun-git.env`, so you do not need to pass `--config` when that file sets `RABUN_GIT_CONFIG`.
 

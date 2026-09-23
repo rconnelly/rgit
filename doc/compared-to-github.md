@@ -21,7 +21,7 @@ A shorter map lives in [What Rabun Git is](what-it-is.md).
 | GitHub | `gh` | rgit | Gap |
 | --- | --- | --- | --- |
 | Sign-up, orgs, teams, SSO | `gh auth` | No sign-up; `rgit origin user add` | An admin creates every login |
-| SSH keys on the account | Settings / `gh ssh-key` | `rgit origin key add` / `key list` | First key on the host; fingerprints only; no deploy keys, PATs, or fine-grained tokens |
+| SSH keys on the account | Settings / `gh ssh-key` | `rgit origin key copy` / `key add` / `key list` | First key via host SSH (`key copy`); fingerprints only; no deploy keys, PATs, or fine-grained tokens |
 | Collaborators (read/write/admin) | `gh api` / UI | `rgit origin access grant` / `revoke` | Three roles only; no CODEOWNERS; `main` / `master` are always protected |
 | Outside collaborators, GitHub Apps | — | — | None |
 
@@ -56,10 +56,10 @@ A shorter map lives in [What Rabun Git is](what-it-is.md).
 
 | `gh` | rgit |
 | --- | --- |
-| `gh auth login` | Register a `.pub` (`key add`); then `rgit remote add origin git@HOST` |
+| `gh auth login` | `rgit remote add origin git@HOST` then `rgit origin key copy --admin` |
 | `gh repo create` / `list` / `view` | `repo create` / `list` / `show` |
 | `gh repo clone` | `git clone ssh://git@HOST:2222/owner/name.git` |
-| `gh ssh-key add` | `key add USER --file ~/.ssh/id_ed25519.pub` |
+| `gh ssh-key add` | `rgit origin key copy` (first key) or `key add USER --file ~/.ssh/id_ed25519.pub` |
 | `gh pr create` / `list` / `view` / `review` / `merge` | `request create` / `list` / `show` / `review` / `merge` |
 | `gh run list` / `view` | `run list` / `show` / `logs` |
 | `gh api`, `gh issue`, `gh release`, `gh gist`, … | None |

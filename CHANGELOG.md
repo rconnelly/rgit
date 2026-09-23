@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `pack.sh` refuses a root-owned `dist/release` (or packs under `/tmp`) instead of failing mid-tarball after `sudo pack`
 - `rabun-git shell` opens an operator bash as the systemd user so `user` / `repo` / `key` do not need `sudo -u` on each command (prompt `(rabun-git)`)
 - Local client: `rgit remote add origin git@HOST` then `rgit origin …` for forge commands (`key add --file` reads a path on this machine; `repo list --user` lists that user’s remotes)
+- `rgit origin key copy` registers a public key over host SSH (port 22) so the first forge key does not need `rabun-git shell` on the server (`--admin` creates the user; `--host` / `remote add --host` override `$USER@<forge-host>:22`)
 - `rgit` is the official short command: a symlink beside `rabun-git` (Ubuntu install and `scripts/link-rgit.sh`); help text follows argv0; a foreign `rgit` is not overwritten
 - `./scripts/install.sh` installs from this checkout (`cargo install --path . --locked`) and links `rgit`
 

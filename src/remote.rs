@@ -38,6 +38,8 @@ pub struct ClientInvoke {
     pub target: RemoteTarget,
     /// Identity from `remotes.toml`, if any.
     pub identity: Option<PathBuf>,
+    /// Host SSH for `key copy` (port 22).
+    pub admin: RemoteTarget,
     /// Argv after removing the remote name (may include `--identity`).
     pub args: Vec<String>,
 }
@@ -53,6 +55,9 @@ struct RemoteEntry {
     url: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     identity: Option<PathBuf>,
+    /// Host SSH for `key copy` (`user@HOST`, default `$USER@<forge-host>:22`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    host: Option<String>,
 }
 
 /// Path to the remotes file on this machine (`RABUN_GIT_REMOTES` or XDG config).
@@ -89,9 +94,13 @@ pub fn manage_at(path: &Path, command: RemoteCommands) -> Result<String> {
             name,
             url,
             identity,
+            host,
         } => {
             validate_name(&name)?;
             parse_url(&url)?;
+            if let Some(host) = &host {
+                parse_host_url(host)?;
+            }
             let mut file = load(path)?;
             if file.remotes.contains_key(&name) {
                 bail!("remote {name} already exists; rabun-git remote remove {name}");
@@ -101,6 +110,7 @@ pub fn manage_at(path: &Path, command: RemoteCommands) -> Result<String> {
                 RemoteEntry {
                     url: url.clone(),
                     identity,
+                    host,
                 },
             );
             save(path, &file)?;
@@ -125,6 +135,9 @@ pub fn manage_at(path: &Path, command: RemoteCommands) -> Result<String> {
             let mut lines = vec![format!("name: {name}"), format!("url: {}", entry.url)];
             if let Some(identity) = &entry.identity {
                 lines.push(format!("identity: {}", identity.display()));
+            }
+            if let Some(host) = &entry.host {
+                lines.push(format!("host: {host}"));
             }
             Ok(lines.join("\n") + "\n")
         }
@@ -163,12 +176,17 @@ where
         return Ok(None);
     };
     let target = parse_url(&entry.url)?;
+    let admin = match &entry.host {
+        Some(host) => parse_host_url(host)?,
+        None => default_admin_target(&target),
+    };
     let mut rest = args;
     rest.remove(idx);
     Ok(Some(ClientInvoke {
         name,
         target,
         identity: entry.identity.clone(),
+        admin,
         args: rest,
     }))
 }
@@ -214,12 +232,42 @@ pub fn parse_url(raw: &str) -> Result<RemoteTarget> {
     }
     if let Some(rest) = raw.strip_prefix("ssh://") {
         let hostpart = rest.split('/').next().unwrap_or(rest);
-        return parse_user_host_port(hostpart);
+        return parse_user_host_port(hostpart, 2222, "git");
     }
-    parse_user_host_port(raw)
+    parse_user_host_port(raw, 2222, "git")
 }
 
-fn parse_user_host_port(raw: &str) -> Result<RemoteTarget> {
+/// Parse host SSH for `key copy` (`HOST`, `user@HOST`, default port 22).
+pub fn parse_host_url(raw: &str) -> Result<RemoteTarget> {
+    let raw = raw.trim();
+    if raw.is_empty() {
+        bail!("empty host SSH URL");
+    }
+    if let Some(rest) = raw.strip_prefix("ssh://") {
+        let hostpart = rest.split('/').next().unwrap_or(rest);
+        return parse_user_host_port(hostpart, 22, &local_username());
+    }
+    parse_user_host_port(raw, 22, &local_username())
+}
+
+/// `$USER@<forge-host>:22` for `key copy` when no `host` is saved.
+pub fn default_admin_target(forge: &RemoteTarget) -> RemoteTarget {
+    RemoteTarget {
+        user: local_username(),
+        host: forge.host.clone(),
+        port: 22,
+    }
+}
+
+fn local_username() -> String {
+    std::env::var("USER")
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "git".into())
+}
+
+fn parse_user_host_port(raw: &str, default_port: u16, default_user: &str) -> Result<RemoteTarget> {
     let (user, hostport) = match raw.split_once('@') {
         Some((user, rest)) => {
             if user.is_empty() {
@@ -227,7 +275,7 @@ fn parse_user_host_port(raw: &str) -> Result<RemoteTarget> {
             }
             (user.to_string(), rest)
         }
-        None => ("git".into(), raw),
+        None => (default_user.to_string(), raw),
     };
     let (host, port) = match hostport.rsplit_once(':') {
         Some((host, port)) if port.chars().all(|c| c.is_ascii_digit()) => {
@@ -239,7 +287,7 @@ fn parse_user_host_port(raw: &str) -> Result<RemoteTarget> {
             }
             (host.to_string(), port)
         }
-        _ => (hostport.to_string(), 2222),
+        _ => (hostport.to_string(), default_port),
     };
     if host.is_empty() {
         bail!("remote URL is missing a host");
@@ -338,6 +386,91 @@ fn rewrite_key_file(args: &mut [String]) -> Result<()> {
     Ok(())
 }
 
+/// Copy a local public key to the forge over host SSH (port 22), not git port 2222.
+pub fn copy_key(
+    invoke: &ClientInvoke,
+    user: Option<&str>,
+    file: Option<&Path>,
+    admin: bool,
+    host: Option<&str>,
+    identity: Option<&Path>,
+) -> Result<()> {
+    let user = user
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(ToString::to_string)
+        .unwrap_or_else(local_username);
+    valid_user(&user)?;
+    let path = match file {
+        Some(path) => path.to_path_buf(),
+        None => default_pub_file()?,
+    };
+    let text = fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
+    let admin_target = match host {
+        Some(host) => parse_host_url(host)?,
+        None => invoke.admin.clone(),
+    };
+    let script = host_install_script(&user, &text, admin)?;
+    let mut ssh = Command::new("ssh");
+    ssh.arg("-t");
+    if let Some(identity) = identity {
+        ssh.arg("-i").arg(identity);
+    }
+    ssh.arg("-p").arg(admin_target.port.to_string());
+    ssh.arg(format!("{}@{}", admin_target.user, admin_target.host));
+    ssh.arg("--");
+    ssh.arg("sudo");
+    ssh.arg("-u");
+    ssh.arg("rabun-git");
+    ssh.arg("-H");
+    ssh.arg("--");
+    ssh.arg("/bin/bash");
+    ssh.arg("-lc");
+    ssh.arg(&script);
+    eprintln!(
+        "Copying {} to {} as {user} via {}@{}:{} (sudo on the host)",
+        path.display(),
+        invoke.name,
+        admin_target.user,
+        admin_target.host,
+        admin_target.port
+    );
+    let status = ssh
+        .status()
+        .with_context(|| format!("run ssh {}@{}", admin_target.user, admin_target.host))?;
+    if !status.success() {
+        std::process::exit(status.code().unwrap_or(1));
+    }
+    Ok(())
+}
+
+/// Shell run on the host as `rabun-git` (tests).
+pub fn host_install_script(user: &str, openssh: &str, admin: bool) -> Result<String> {
+    let user = shlex::try_quote(user).map_err(|err| anyhow::anyhow!("{err}"))?;
+    let key = shlex::try_quote(openssh.trim()).map_err(|err| anyhow::anyhow!("{err}"))?;
+    let ensure = if admin {
+        format!("rabun-git user add {user} --admin")
+    } else {
+        format!(
+            "rabun-git user list | awk '{{print $1}}' | grep -qx {user} || rabun-git user add {user}"
+        )
+    };
+    Ok(format!(
+        "set -e\n{ensure}\nrabun-git key add {user} --literal {key}\n"
+    ))
+}
+
+fn default_pub_file() -> Result<PathBuf> {
+    let home = std::env::var("HOME").context("HOME is unset; pass --file")?;
+    for name in ["id_ed25519.pub", "id_rsa.pub"] {
+        let path = PathBuf::from(&home).join(".ssh").join(name);
+        if path.is_file() {
+            return Ok(path);
+        }
+    }
+    bail!("no ~/.ssh/id_ed25519.pub or id_rsa.pub; pass --file");
+}
+
 fn quote_payload(payload: &[String]) -> Result<String> {
     let mut parts = Vec::new();
     for arg in payload {
@@ -405,6 +538,7 @@ mod tests {
                 name: "repo".into(),
                 url: "git@damascus".into(),
                 identity: None,
+                host: None,
             },
         )
         .unwrap_err();
@@ -416,6 +550,7 @@ mod tests {
                 name: "origin".into(),
                 url: "git@damascus".into(),
                 identity: None,
+                host: None,
             },
         )
         .unwrap();
@@ -454,6 +589,7 @@ mod tests {
                 name: "origin".into(),
                 url: "git@damascus:2222".into(),
                 identity: Some(PathBuf::from("/id")),
+                host: Some("ryan@damascus".into()),
             },
         )
         .unwrap();
@@ -478,6 +614,22 @@ mod tests {
         assert_eq!(invoke.name, "origin");
         assert_eq!(invoke.target.host, "damascus");
         assert_eq!(invoke.identity.as_deref(), Some(Path::new("/id")));
+        assert_eq!(
+            invoke.admin,
+            RemoteTarget {
+                user: "ryan".into(),
+                host: "damascus".into(),
+                port: 22,
+            }
+        );
+        assert!(manage_at(
+            &remotes,
+            RemoteCommands::Show {
+                name: "origin".into()
+            }
+        )
+        .unwrap()
+        .contains("host: ryan@damascus"));
 
         let payload = payload_args(&invoke.args).unwrap();
         assert_eq!(payload[0], "key");
@@ -488,6 +640,54 @@ mod tests {
         assert!(!payload
             .iter()
             .any(|a| a == "--identity" || a == "/override"));
+    }
+
+    #[test]
+    fn parse_host_url_defaults_port_22() {
+        let target = parse_host_url("damascus").unwrap();
+        assert_eq!(target.host, "damascus");
+        assert_eq!(target.port, 22);
+        assert!(!target.user.is_empty());
+        assert_eq!(
+            parse_host_url("ryan@damascus:22").unwrap(),
+            RemoteTarget {
+                user: "ryan".into(),
+                host: "damascus".into(),
+                port: 22,
+            }
+        );
+        assert_eq!(
+            parse_host_url("ssh://ada@git.example.com/unused").unwrap(),
+            RemoteTarget {
+                user: "ada".into(),
+                host: "git.example.com".into(),
+                port: 22,
+            }
+        );
+    }
+
+    #[test]
+    fn default_admin_uses_local_user_and_port_22() {
+        let admin = default_admin_target(&RemoteTarget {
+            user: "git".into(),
+            host: "damascus".into(),
+            port: 2222,
+        });
+        assert_eq!(admin.host, "damascus");
+        assert_eq!(admin.port, 22);
+        assert_eq!(admin.user, local_username());
+    }
+
+    #[test]
+    fn host_install_script_quotes_key() {
+        let admin = host_install_script("ryan", "ssh-ed25519 AAAA comment", true).unwrap();
+        assert!(admin.contains("user add ryan --admin"));
+        assert!(admin.contains("key add ryan --literal"));
+        assert!(admin.contains("ssh-ed25519 AAAA comment"));
+        let ordinary = host_install_script("ada", "ssh-ed25519 BBBB", false).unwrap();
+        assert!(ordinary.contains("user add ada"));
+        assert!(!ordinary.contains("--admin"));
+        assert!(ordinary.contains("grep -qx ada"));
     }
 
     #[test]

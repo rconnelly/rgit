@@ -17,6 +17,7 @@ On this machine, save a forge host once, then use that name as the first word (t
 
 ```bash
 rgit remote add origin git@git.example.com
+rgit origin key copy ada --admin
 rgit origin repo list
 rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```
@@ -29,7 +30,7 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, `serve`, `shell`, and `remote` work only on the machine that runs them (`remote` is this machine only). The others work over SSH or `rgit origin …`.
+`init`, `check`, `status`, `serve`, `shell`, `remote`, and `key copy` work only on the machine that runs them (`remote` and `key copy` are this machine only). `key copy` uses host SSH on port 22 (not git port 2222). The others work over SSH or `rgit origin …`.
 
 On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
 
@@ -41,7 +42,13 @@ rabun-git repo create ada/website
 exit
 ```
 
-After the first admin key, `rabun-git origin repo create ada/website` (or `ssh -p 2222 git@HOST …`) needs no sudo.
+To register the first admin key from this machine (host SSH + sudo, not port 2222):
+
+```bash
+rgit origin key copy ada --admin --file ~/.ssh/id_ed25519.pub
+```
+
+After that, `rgit origin repo create ada/website` (or `ssh -p 2222 git@HOST …`) needs no sudo.
 
 ## Host / operator
 
@@ -57,9 +64,9 @@ After the first admin key, `rabun-git origin repo create ada/website` (or `ssh -
 
 | Command | What it does |
 | --- | --- |
-| `rabun-git remote add NAME URL [--identity FILE]` | Save a forge host (`origin` is the usual name) |
+| `rabun-git remote add NAME URL [--identity FILE] [--host user@HOST]` | Save a forge host (`origin` is the usual name) |
 | `rabun-git remote list` | List saved names and URLs |
-| `rabun-git remote show NAME` | URL and optional identity |
+| `rabun-git remote show NAME` | URL, optional identity, and host SSH for `key copy` |
 | `rabun-git remote remove NAME` | Delete a saved name |
 | `rabun-git NAME …` | Run a forge command on that host |
 
@@ -75,6 +82,7 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 | `rabun-git key add USER --file KEY.pub` | Append OpenSSH public keys from a local file |
 | `rabun-git key add USER --literal 'ssh-ed25519 AAAA…'` | Append a key given on the command line |
 | `rabun-git key list USER` | Fingerprints only |
+| `rabun-git NAME key copy [USER] [--file KEY.pub] [--admin] [--host user@HOST]` | Copy a public key to the forge over host SSH (port 22); USER defaults to this machine’s username |
 
 ## Repositories and ACL
 
