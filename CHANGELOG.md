@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Beginner user guide under `doc/` (summary, remotes, users and roles, everyday git, merge requests, CI)
-- Laptop pack-and-push from a checkout (`deploy/ubuntu/pack.sh`, `push.sh --pack`) for Ubuntu hosts, including `/etc/rabun-git/rabun-git.env` (`--env`) and Rabun `[[apps]]` housekeeping
+- Pack-and-push from a checkout (`deploy/ubuntu/pack.sh`, `push.sh --pack`) for Ubuntu hosts, including `/etc/rabun-git/rabun-git.env` (`--env`) and Rabun `[[apps]]` housekeeping
 - `push.sh` uses SSH publickey only (`--identity` optional) and skips sudo when the remote user is already root or has passwordless sudo
 - `pack.sh` refuses a root-owned `dist/release` (or packs under `/tmp`) instead of failing mid-tarball after `sudo pack`
 - `rabun-git shell` opens an operator bash as the systemd user so `user` / `repo` / `key` do not need `sudo -u` on each command (prompt `(rabun-git)`)
-- Laptop client: `rabun-git remote add origin git@HOST` then `rabun-git origin …` for forge commands (`key add --file` reads the laptop path; `repo list --user` lists that user’s remotes)
+- Local client: `rgit remote add origin git@HOST` then `rgit origin …` for forge commands (`key add --file` reads a path on this machine; `repo list --user` lists that user’s remotes)
 - `rgit` is the official short command: a symlink beside `rabun-git` (Ubuntu install and `scripts/link-rgit.sh`); help text follows argv0; a foreign `rgit` is not overwritten
 
 ## [0.1.0]

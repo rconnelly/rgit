@@ -1,6 +1,6 @@
 # Install
 
-Install the `rabun-git` command on the **server** (the machine that will host repositories). You can also install it on a laptop if you want the same CLI locally; laptops only need `git` and SSH to clone and push.
+Install the `rabun-git` command on the **server** (the machine that will host repositories). You can also install it on this machine if you want the same CLI locally; clone and push only need `git` and SSH.
 
 `rgit` and `rabun-git` are the same program. `rgit` is the short command (a symlink). Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`. If another `rgit` is already on `PATH` (some recursive-git wrappers use that name), the linker leaves it alone.
 
@@ -9,7 +9,7 @@ Install the `rabun-git` command on the **server** (the machine that will host re
 - [Git](https://git-scm.com/) on `PATH` (`git --version`)
 - A [Rust](https://rustup.rs/) toolchain with Cargo (edition 2021, Rust 1.85 or newer)
 - A C compiler (the SSH stack links native code)
-- An SSH **public** key on each laptop that will connect (`~/.ssh/id_ed25519.pub` is typical)
+- An SSH **public** key on each machine that will connect (`~/.ssh/id_ed25519.pub` is typical)
 
 On Debian/Ubuntu you can install the C compiler and git with the repo script:
 

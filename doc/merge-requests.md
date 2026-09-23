@@ -30,7 +30,7 @@ rabun-git request create ada/website --head feature/contact-form --title "Add co
 
 Optional `--base master` (default is the bare repo’s HEAD branch) and `--body "…"` for a longer description.
 
-From a laptop:
+From this machine:
 
 ```bash
 ssh -p 2222 git@git.example.com request create ada/website --head feature/contact-form --title "Add contact form"

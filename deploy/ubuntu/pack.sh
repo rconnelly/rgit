@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build a Linux production archive from this checkout: release binary, LICENSE, README.
-# Run on Linux (laptop or Actions). Same tarball shape as GitHub Releases.
+# Run on Linux (this machine or Actions). Same tarball shape as GitHub Releases.
 #
 #   ./deploy/ubuntu/pack.sh [tag]
 #   RABUN_GIT_PACK_DIR=dist/release ./deploy/ubuntu/pack.sh

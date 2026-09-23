@@ -29,7 +29,7 @@ git log --oneline -5
 
 ## Commit locally
 
-Git still stores commits on **your laptop** until you push.
+Git still stores commits on **this machine** until you push.
 
 ```bash
 # edit files

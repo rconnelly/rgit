@@ -31,7 +31,7 @@ Clone URL shape used throughout:
 ssh://git@git.example.com:2222/ada/website.git
 ```
 
-Forge commands from a laptop (after the first admin key is on the host):
+Forge commands from this machine (after the first admin key is on the host):
 
 ```bash
 rabun-git remote add origin git@git.example.com

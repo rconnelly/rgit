@@ -12,7 +12,7 @@ git remote add origin ssh://git@HOST:2222/owner/name.git
 
 `rgit` and `rabun-git` are the same program. `rgit` is the short command; crate path, env (`RABUN_GIT_*`), and systemd stay `rabun-git`.
 
-Forge admin from a laptop (users, keys, repos — not `git push`):
+Forge admin from this machine (users, keys, repos — not `git push`):
 
 ```bash
 rgit remote add origin git@HOST

@@ -2,7 +2,7 @@
 
 Rabun Git has no sign-up page. An admin creates a **user**, attaches that person’s **SSH public key**, then **grants a role** on each repository they should see.
 
-This page is a set of workflows. Run `rabun-git …` on the server (operator, full access), over SSH if you are a forge admin, or from a laptop after `rabun-git remote add origin git@git.example.com`:
+This page is a set of workflows. Run `rabun-git …` on the server (operator, full access), over SSH if you are a forge admin, or from this machine after `rgit remote add origin git@git.example.com`:
 
 ```bash
 rabun-git origin user list
@@ -65,7 +65,7 @@ rabun-git user list
 
 ### 2. Register their public key
 
-On **Linus’s laptop**:
+On **Linus’s machine**:
 
 ```bash
 ssh-keygen -t ed25519 -C "linus@git.example.com" -f ~/.ssh/id_ed25519
@@ -83,7 +83,7 @@ rabun-git key add linus --file /path/to/linus.pub
 rabun-git key list linus
 ```
 
-From a laptop that already has an admin key, `--file` is read locally:
+From this machine, if you already have an admin key, `--file` is read locally:
 
 ```bash
 rabun-git origin key add linus --file ~/.ssh/id_ed25519.pub
@@ -101,7 +101,7 @@ rabun-git repo show ada/website
 
 `--role write` is the default if you omit `--role`.
 
-Linus checks from his laptop:
+Linus checks from his machine:
 
 ```bash
 ssh -p 2222 git@git.example.com repo list

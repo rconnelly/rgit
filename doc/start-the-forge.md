@@ -42,10 +42,10 @@ Logins use the same character rules as repo segments: letters, digits, `.`, `_`,
 
 ## 3. Attach an SSH public key
 
-The forge never stores private keys. Copy the **public** key from the laptop you will connect with:
+The forge never stores private keys. Copy the **public** key from the machine you will connect with:
 
 ```bash
-# on the laptop, print the public key:
+# on this machine, print the public key:
 cat ~/.ssh/id_ed25519.pub
 ```
 
@@ -61,13 +61,13 @@ If you are setting this up from the same machine:
 rabun-git key add ada --file ~/.ssh/id_ed25519.pub
 ```
 
-If you do not have a key yet (on the laptop):
+If you do not have a key yet (on this machine):
 
 ```bash
 ssh-keygen -t ed25519 -C "ada@git.example.com" -f ~/.ssh/id_ed25519
 ```
 
-Then copy `id_ed25519.pub` to the server and run `key add`. The **first** admin key must be added on the host. After that, extra keys and every other forge command can run from a laptop:
+Then copy `id_ed25519.pub` to the server and run `key add`. The **first** admin key must be added on the host. After that, extra keys and every other forge command can run from this machine:
 
 ```bash
 rabun-git remote add origin git@git.example.com
@@ -95,13 +95,13 @@ Leave this running. Git clone/push and `ssh -p 2222 …` commands talk to this p
 - Override once: `rabun-git serve --bind 0.0.0.0:2222`
 - Or set `RABUN_GIT_SSH_BIND` in `.env` / systemd
 
-Open **TCP 2222** on the firewall if laptops are not on the same machine. Port **22** (normal SSH login) is unrelated.
+Open **TCP 2222** on the firewall if clients are not on the same machine. Port **22** (normal SSH login) is unrelated.
 
-On first start, the forge writes an SSH host key at `$RABUN_GIT_ROOT/ssh_host_ed25519_key`. Laptops will ask you to trust that host key the first time they connect.
+On first start, the forge writes an SSH host key at `$RABUN_GIT_ROOT/ssh_host_ed25519_key`. This machine will ask you to trust that host key the first time you connect.
 
 For a systemd unit and pack/push, see [deploy Ubuntu](deploy-ubuntu.md) and [architecture.md](architecture.md#systemd). On that install, run operator commands inside `rabun-git shell` (one sudo, prompt `(rabun-git)`, then `rabun-git user add …` with no prefix).
 
-## 6. Smoke-test SSH from a laptop
+## 6. Smoke-test SSH from this machine
 
 ```bash
 ssh -p 2222 git@git.example.com
@@ -113,7 +113,7 @@ If that fails, see [Troubleshooting](#troubleshooting) below.
 
 ## Optional: shorter git URLs
 
-On each laptop, add to `~/.ssh/config`:
+On each client machine, add to `~/.ssh/config`:
 
 ```sshconfig
 Host git.example.com

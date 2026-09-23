@@ -13,7 +13,7 @@ rgit --identity ~/.ssh/id_ed25519 origin repo list
 
 `rgit --version` prints the crate version.
 
-On a laptop, save a forge host once, then use that name as the first word (this is a **forge** alias, not a git remote):
+On this machine, save a forge host once, then use that name as the first word (this is a **forge** alias, not a git remote):
 
 ```bash
 rgit remote add origin git@git.example.com
@@ -29,7 +29,7 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, `serve`, `shell`, and `remote` work only on the machine that runs them (`remote` is laptop-only). The others work over SSH or `rabun-git origin …`.
+`init`, `check`, `status`, `serve`, `shell`, and `remote` work only on the machine that runs them (`remote` is this machine only). The others work over SSH or `rgit origin …`.
 
 On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
 
@@ -53,7 +53,7 @@ After the first admin key, `rabun-git origin repo create ada/website` (or `ssh -
 | `rabun-git serve [--bind HOST:PORT]` | Listen for git + management commands |
 | `rabun-git shell` | One sudo, then bash as the systemd user (prompt `(rabun-git)`; `exit` to leave) |
 
-## Laptop remotes
+## Named remotes (this machine)
 
 | Command | What it does |
 | --- | --- |
@@ -115,7 +115,7 @@ ssh://git@HOST:2222/owner/name.git
 | `RABUN_GIT_HEALTH_BIND` | Loopback `GET /health` (default `127.0.0.1:8792`; empty/`off` disables) |
 | `RABUN_GIT_STATUS_FILE` | Companion JSON (default `$RABUN_GIT_ROOT/status.json`) |
 | `RABUN_GIT_CONFIG` | Path to `rabun-git.toml` |
-| `RABUN_GIT_REMOTES` | Laptop remotes file (default `~/.config/rabun-git/remotes.toml`) |
+| `RABUN_GIT_REMOTES` | Named remotes file on this machine (default `~/.config/rabun-git/remotes.toml`) |
 | `RABUN_GIT_SSH_IDENTITY` | Private key for `rabun-git origin …` |
 
 Special push to open a request:

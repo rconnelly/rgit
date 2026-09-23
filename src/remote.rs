@@ -1,4 +1,4 @@
-//! Laptop-only named forge hosts (`rabun-git origin …`).
+//! Named forge hosts on this machine (`rabun-git origin …`).
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -55,7 +55,7 @@ struct RemoteEntry {
     identity: Option<PathBuf>,
 }
 
-/// Path to the laptop remotes file (`RABUN_GIT_REMOTES` or XDG config).
+/// Path to the remotes file on this machine (`RABUN_GIT_REMOTES` or XDG config).
 pub fn remotes_path() -> PathBuf {
     if let Ok(path) = std::env::var("RABUN_GIT_REMOTES") {
         let path = path.trim();
@@ -173,7 +173,7 @@ where
     }))
 }
 
-/// Management argv to send over SSH: drop laptop globals, rewrite `key add --file`.
+/// Management argv to send over SSH: drop local globals, rewrite `key add --file`.
 pub fn payload_args(args: &[String]) -> Result<Vec<String>> {
     let mut out = strip_globals(args);
     rewrite_key_file(&mut out)?;

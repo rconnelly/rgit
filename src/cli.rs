@@ -81,7 +81,7 @@ pub enum Commands {
     },
     /// Interactive bash as the systemd user (`rabun-git`; host only)
     Shell,
-    /// Laptop-only named forge hosts (`~/.config/rabun-git/remotes.toml`)
+    /// Named forge hosts on this machine (`~/.config/rabun-git/remotes.toml`)
     Remote {
         #[command(subcommand)]
         command: RemoteCommands,
@@ -155,7 +155,7 @@ pub enum KeyCommands {
         /// File containing one or more OpenSSH public keys
         #[arg(long)]
         file: Option<PathBuf>,
-        /// OpenSSH public key text (laptop client / SSH)
+        /// OpenSSH public key text (this machine / SSH)
         #[arg(long)]
         literal: Option<String>,
     },
@@ -290,7 +290,7 @@ pub enum RunCommands {
     },
 }
 
-/// Laptop-only `rabun-git remote` subcommands.
+/// `remote` subcommands (this machine only).
 #[derive(Subcommand)]
 pub enum RemoteCommands {
     /// Save a forge host alias (default name: `origin`)

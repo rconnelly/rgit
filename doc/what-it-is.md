@@ -6,7 +6,7 @@ This guide assumes you already know a little git: commits, branches, and that a 
 
 ## The idea in git terms
 
-On your laptop you have a **working copy** (files you edit). GitHub, GitLab, and Rabun Git are all places that store a **remote** copy so other people can get the same history.
+On this machine you have a **working copy** (files you edit). GitHub, GitLab, and Rabun Git are all places that store a **remote** copy so other people can get the same history.
 
 | You already know | In Rabun Git |
 | --- | --- |
@@ -21,7 +21,7 @@ The git protocol is the same. The host, port, and how you log in are different.
 ## Two machines, two hats
 
 1. **The server** runs `rabun-git serve`. That process listens for git and management commands on **port 2222** (not the usual SSH port 22). Your existing `sshd` on port 22 is left alone.
-2. **Laptops** (including yours) use `git` and optionally `ssh -p 2222 …` to talk to that server.
+2. **This machine** (and any other client) uses `git` and optionally `ssh -p 2222 …` to talk to that server.
 
 On the server, the `rabun-git` binary you run in a terminal is the **operator**: it can do everything, with no SSH. Over the network, identity is **an SSH public key** that you attached to a forge user.
 

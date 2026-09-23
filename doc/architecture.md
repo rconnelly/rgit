@@ -5,7 +5,7 @@ How the forge is put together (layout, ACL, systemd). For a beginner walkthrough
 Self-hosted git forge CLI. Burton and Rabun do not import this crate. Warehouse workers remain the writers of warehouse trees; this process is a **git remote** they may push to.
 
 ```
-Developer laptop                 Your server
+This machine                     Your server
   git clone/push  --SSH:2222-->  rabun-git serve (russh)
   ssh git@host request …  ---->  same binary, management commands
                                  bare repos under RABUN_GIT_ROOT/repos/

@@ -1,6 +1,6 @@
 # Ubuntu deploy
 
-`rabun-git` is a systemd unit plus a release archive on an **x86_64 (or aarch64) Ubuntu** host. The same machine can already run Rabun: this forge sits beside `rabun.service`, keeps settings in its own env file, and upserts `[[apps]]` in `/etc/rabun/rabun.toml`. The host never talks to GitHub. A laptop (or Actions) packs or downloads the archive and copies it over SSH.
+`rabun-git` is a systemd unit plus a release archive on an **x86_64 (or aarch64) Ubuntu** host. The same machine can already run Rabun: this forge sits beside `rabun.service`, keeps settings in its own env file, and upserts `[[apps]]` in `/etc/rabun/rabun.toml`. The host never talks to GitHub. This machine (or Actions) packs or downloads the archive and copies it over SSH.
 
 There is no public HTTP git UI and no Caddy virtual host. `serve` listens for git and management commands on **TCP 2222** and writes a loopback companion heartbeat.
 
@@ -10,13 +10,13 @@ Ubuntu 24.04 LTS. 1 vCPU / 1 GB is enough for hosting repositories; give the box
 
 - SSH keys on the host (port 22) so `push.sh` can copy the archive
 - **git** at runtime (bootstrap installs it). The host does **not** need `pkg-config` or a compiler unless you run CI workflows that need them
-- Firewall: laptops clone on **2222**, not 22
+- Firewall: clients clone on **2222**, not 22
 
 Do **not** `curl | bash` the bootstrap script from GitHub.
 
 ## 2. Bootstrap (once)
 
-From a clone on your laptop (`gh auth login` if you have not already). Pack this checkout and install in one step. SSH is **publickey only** (no sshd password prompt): use the account you already `ssh` to with a key, not `root@HOST` unless that key is in root’s `authorized_keys`.
+From a clone on this machine (`gh auth login` if you have not already). Pack this checkout and install in one step. SSH is **publickey only** (no sshd password prompt): use the account you already `ssh` to with a key, not `root@HOST` unless that key is in root’s `authorized_keys`.
 
 ```bash
 ./deploy/ubuntu/push.sh --pack --bootstrap user@HOST
@@ -46,11 +46,11 @@ exit
 
 `rabun-git shell` runs one `sudo` as the `rabun-git` user, then an interactive bash. The prompt is `(rabun-git) … $` for the whole session; `exit` ends it. Mutating commands (`user`, `key`, `repo`, …) refuse to run as your login user so the service does not lose write access.
 
-`rabun-git check` and `rabun-git status` still work outside the session. After the first admin key is registered, laptops can create more repos without sudo: `ssh -p 2222 git@HOST repo create ada/website`. `key add --file` still needs a path on the host, so the shell is the better first-time flow.
+`rabun-git check` and `rabun-git status` still work outside the session. After the first admin key is registered, this machine can create more repos without sudo: `rgit origin repo create ada/website` or `ssh -p 2222 git@HOST repo create ada/website`. `key add --file` on the host still needs a path there; from this machine, `--file` is read locally.
 
 `rabun-git` loads `/etc/rabun-git/rabun-git.env`, so you do not need to pass `--config` when that file sets `RABUN_GIT_CONFIG`.
 
-Open **TCP 2222** if laptops are not on the same machine. If `ufw` is already active, bootstrap allows 2222. To enable ufw from scratch: `RABUN_GIT_ENABLE_UFW=1 ./deploy/ubuntu/push.sh --pack --bootstrap user@HOST`.
+Open **TCP 2222** if clients are not on the same machine. If `ufw` is already active, bootstrap allows 2222. To enable ufw from scratch: `RABUN_GIT_ENABLE_UFW=1 ./deploy/ubuntu/push.sh --pack --bootstrap user@HOST`.
 
 ## 3. Later deploys
 

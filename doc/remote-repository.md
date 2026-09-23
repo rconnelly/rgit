@@ -1,6 +1,6 @@
 # Set up a remote repository
 
-This is the usual first goal: a repository on the forge that laptops can clone and push to.
+This is the usual first goal: a repository on the forge that other machines can clone and push to.
 
 In git, a **remote** is a nickname for that server copy. Most people call it `origin`. After these steps, `git push origin` sends commits to Rabun Git the same way it would send them to GitHub.
 
@@ -30,7 +30,7 @@ You can run create on the server:
 rabun-git repo create ada/website
 ```
 
-Or from a laptop, after `rabun-git remote add origin git@git.example.com`:
+Or from this machine, after `rgit remote add origin git@git.example.com`:
 
 ```bash
 rabun-git origin repo create ada/website
@@ -58,7 +58,7 @@ SSH user is `git` or your forge login. The forge maps the **key** to a user; do 
 
 ## Path A — existing local git repo (add a remote)
 
-You already have commits on a laptop and want the forge to be `origin`.
+You already have commits on this machine and want the forge to be `origin`.
 
 On the **server**, create the empty repo if you have not:
 
@@ -66,7 +66,7 @@ On the **server**, create the empty repo if you have not:
 rabun-git repo create ada/website
 ```
 
-On the **laptop**:
+On **this machine**:
 
 ```bash
 cd website
@@ -100,7 +100,7 @@ git push -u origin main
 
 ## Path B — brand new project
 
-No git repo yet. On the laptop:
+No git repo yet. On this machine:
 
 ```bash
 mkdir website
@@ -115,7 +115,7 @@ git push -u origin master
 
 Create `ada/website` on the forge **before** the push (`repo create` above). Pushing to a name that does not exist fails; Rabun Git does not auto-create repos on first push.
 
-## Path C — second laptop (clone)
+## Path C — another machine (clone)
 
 Someone else (or you, on another machine) already pushed. They need [read (or higher) access](users-and-roles.md) and their SSH key registered.
 
@@ -161,7 +161,7 @@ Create `team/warehouse` first (`rabun-git repo create team/warehouse`) and [gran
 
 ## See what the server stored
 
-On the server, bare repos live under `$RABUN_GIT_ROOT/repos/owner/name.git`. You do not need to `cd` there for daily git; use clone URLs from laptops.
+On the server, bare repos live under `$RABUN_GIT_ROOT/repos/owner/name.git`. You do not need to `cd` there for daily git; use clone URLs from this machine.
 
 ```bash
 rabun-git repo list

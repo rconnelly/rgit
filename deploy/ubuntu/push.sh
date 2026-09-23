@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copy a release onto a bare-metal Ubuntu host over SSH. The server never talks to GitHub.
-# Run this from a clone on a machine that can see the private repo (laptop or Actions).
+# Run this from a clone on a machine that can see the private repo (this machine or Actions).
 #
 #   gh auth login   # once, locally
 #   ./deploy/ubuntu/push.sh --bootstrap user@host
