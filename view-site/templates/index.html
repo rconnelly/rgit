@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="repo-view">
+  <header class="repo-header">
+    <p class="repo-eyebrow">Repository</p>
+    <h1>{{ section.extra.repo_name | default(value=section.title) }}</h1>
+    {% if section.extra.clone_url %}
+    <p class="repo-clone"><code>{{ section.extra.clone_url }}</code></p>
+    {% endif %}
+    {% if section.extra.commit_sha %}
+    <p class="repo-commit">
+      <code>{{ section.extra.commit_sha }}</code>
+      {{ section.extra.commit_subject }}
+      <span class="repo-commit-meta">{{ section.extra.commit_author }} · {{ section.extra.commit_date }}</span>
+    </p>
+    {% endif %}
+    <p class="repo-actions"><a href="{{ get_url(path='@/tree/_index.md') }}">Browse files</a></p>
+  </header>
+  <div class="content">
+    {{ section.content | safe }}
+  </div>
+</article>
+{% endblock content %}

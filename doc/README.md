@@ -1,17 +1,17 @@
 # User guide
 
-Rabun Git is a git forge you run on a machine you own: SSH remotes, users and roles, merge requests, and a small CI runner. There is no website.
+Rabun Git is a git forge you run on a machine you own: SSH remotes, users and roles, merge requests, and a small CI runner. There is no website on the forge host. To read a tree in a browser, use [`rgit view`](everyday-git.md#browse-locally) on this machine.
 
 If you know `git clone`, `git commit`, and `git push`, start at the top and follow the pages in order. Each page has copy-paste examples (`git.example.com`, user `ada`, repo `ada/website`).
 
 ## Contents
 
-1. [What Rabun Git is](what-it-is.md) — how this compares to GitHub and a plain git remote
+1. [What is Rabun Git?](what-it-is.md) — how this compares to GitHub and a plain git remote
 2. [Install](install.md) — build the `rabun-git` command
 3. [Start the forge](start-the-forge.md) — pack-and-push or manual `init` / `serve`, then first admin and key
 4. [Set up a remote repository](remote-repository.md) — create `owner/name`, add `origin`, first push or clone
 5. [Users and roles](users-and-roles.md) — add people, register keys, grant and revoke `read` / `write` / `admin`
-6. [Everyday git](everyday-git.md) — clone, branches, protected `main` / `master`
+6. [Everyday git](everyday-git.md) — clone, branches, protected `main` / `master`, local `rgit view`
 7. [Merge requests](merge-requests.md) — propose, review, fast-forward merge
 8. [CI workflows](ci-workflows.md) — `.rabun/workflows` on push, tag, and request
 9. [Command reference](commands.md) — CLI and SSH cheat sheet

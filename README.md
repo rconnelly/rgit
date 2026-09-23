@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/Burton-Workspaces/rabun-git/actions/workflows/ci.yml/badge.svg)](https://github.com/Burton-Workspaces/rabun-git/actions/workflows/ci.yml)
 
-Self-hosted **git forge CLI**: bare repositories over SSH, CLI merge requests, and a small in-repo YAML workflow runner. No web UI. No GitHub.com.
+Self-hosted **git forge CLI**: bare repositories over SSH, CLI merge requests, and a small in-repo YAML workflow runner. No public web UI on the forge host. No GitHub.com.
+
+Browse a local clone (or a bare repo on the host) with `rgit view` — a loopback Zola preview, not HTTP on `serve`.
 
 If you already use `git clone` / `git push`, you can run this on a server you own and point `origin` at it.
 
@@ -29,12 +31,12 @@ The guide is written for people who know basic git (commits, branches, remotes) 
 
 | Section | What you will do |
 | --- | --- |
-| [What Rabun Git is](doc/what-it-is.md) | Map GitHub-style hosting onto this CLI |
+| [What is Rabun Git?](doc/what-it-is.md) | Map GitHub-style hosting onto this CLI |
 | [Install](doc/install.md) | Build `rabun-git` and link `rgit` |
 | [Start the forge](doc/start-the-forge.md) | Pack-and-push or manual `init` / `serve`, then first admin and key |
 | [Set up a remote repository](doc/remote-repository.md) | Create `owner/name`, add `origin`, first push or clone |
 | [Users and roles](doc/users-and-roles.md) | Create users, attach keys, grant and revoke `read` / `write` / `admin` |
-| [Everyday git](doc/everyday-git.md) | Clone, branch, and protected `main` / `master` |
+| [Everyday git](doc/everyday-git.md) | Clone, branch, protected `main` / `master`, local `rgit view` |
 | [Merge requests](doc/merge-requests.md) | Open, review, and fast-forward merge |
 | [CI workflows](doc/ci-workflows.md) | `.rabun/workflows` on push, tag, and request |
 | [Command reference](doc/commands.md) | Every CLI and SSH command |

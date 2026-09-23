@@ -28,6 +28,7 @@ pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<
         Commands::Init
         | Commands::Check
         | Commands::Status
+        | Commands::View { .. }
         | Commands::Serve { .. }
         | Commands::Shell
         | Commands::Remote { .. }

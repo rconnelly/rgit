@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rgit` is the official short command: a symlink beside `rabun-git` (Ubuntu install and `scripts/link-rgit.sh`); help text follows argv0; a foreign `rgit` is not overwritten
 - `./scripts/install.sh` installs from this checkout (`cargo install --path . --locked`) and links `rgit`
 - Workflow `runs-on:` fans out to linux / macos / windows; registered `rgit agent` builders poll over SSH and claim queued jobs (`builders.yaml`)
+- `rgit view` renders a local git tree as a loopback Zola + DevLab preview (README, file tree, blobs). Not an HTTP UI on `serve`.
 
 ## [0.1.0]
 

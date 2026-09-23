@@ -73,6 +73,20 @@ pub enum Commands {
     Check,
     /// Print companion status (`rabun.companion/v1`, no keys)
     Status,
+    /// Loopback Zola preview of a git tree (this machine only)
+    View {
+        /// Path or `owner/name` (default: current directory)
+        target: Option<String>,
+        /// Git revision (default HEAD)
+        #[arg(long = "ref", default_value = "HEAD")]
+        git_ref: String,
+        /// Loopback address (default 127.0.0.1:1111)
+        #[arg(long, default_value = "127.0.0.1:1111")]
+        bind: String,
+        /// Open the preview in a browser
+        #[arg(long)]
+        open: bool,
+    },
     /// SSH git + management commands (loopback health)
     Serve {
         /// SSH bind (overrides config / `RABUN_GIT_SSH_BIND`)
@@ -410,6 +424,7 @@ impl Commands {
             Commands::Init
                 | Commands::Check
                 | Commands::Status
+                | Commands::View { .. }
                 | Commands::Serve { .. }
                 | Commands::Shell
                 | Commands::Remote { .. }
@@ -455,6 +470,20 @@ mod tests {
         }
         .requires_service_uid());
         assert!(!Commands::Check.requires_service_uid());
+        assert!(Commands::View {
+            target: None,
+            git_ref: "HEAD".into(),
+            bind: "127.0.0.1:1111".into(),
+            open: false,
+        }
+        .ssh_forbidden());
+        assert!(!Commands::View {
+            target: None,
+            git_ref: "HEAD".into(),
+            bind: "127.0.0.1:1111".into(),
+            open: false,
+        }
+        .requires_service_uid());
         assert!(Commands::Remote {
             command: RemoteCommands::List
         }

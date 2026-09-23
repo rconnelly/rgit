@@ -1,0 +1,90 @@
+/* Rabun mountain mark: cream, gold, sage, pine, forest. */
+
+:root,
+:root[data-theme="light"],
+html[data-brand="rabun"],
+html[data-brand="rabun"][data-theme="light"] {
+  --color-bg: #faf3d8;
+  --color-surface: #fff8e0;
+  --color-fg: #0c241c;
+  --color-muted: #2f5c4a;
+  --color-border: #efe4b8;
+  --color-accent: #1f4a38;
+  --color-accent-contrast: #fff8e0;
+  --shadow-color: 12 36 28;
+  --color-code-bg: #efe4b8;
+  --color-code-fg: #0c241c;
+  --color-pre-bg: #fff8e0;
+  --color-pre-fg: #0c241c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  html[data-brand="rabun"] {
+    --color-bg: #0c241c;
+    --color-surface: #143528;
+    --color-fg: #faf3d8;
+    --color-muted: #7a9e6e;
+    --color-border: #1f4a38;
+    --color-accent: #c4a04a;
+    --color-accent-contrast: #0c241c;
+    --shadow-color: 0 0 0;
+    --color-code-bg: #143528;
+    --color-code-fg: #faf3d8;
+    --color-pre-bg: #0c241c;
+    --color-pre-fg: #faf3d8;
+  }
+}
+
+:root[data-theme="dark"],
+html[data-brand="rabun"][data-theme="dark"] {
+  --color-bg: #0c241c;
+  --color-surface: #143528;
+  --color-fg: #faf3d8;
+  --color-muted: #7a9e6e;
+  --color-border: #1f4a38;
+  --color-accent: #c4a04a;
+  --color-accent-contrast: #0c241c;
+  --shadow-color: 0 0 0;
+  --color-code-bg: #143528;
+  --color-code-fg: #faf3d8;
+  --color-pre-bg: #0c241c;
+  --color-pre-fg: #faf3d8;
+}
+
+.repo-view .repo-header {
+  margin-block-end: 2rem;
+  padding-block-end: 1.5rem;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.repo-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.repo-view .repo-header h1 {
+  margin-block: 0.35rem 0.75rem;
+}
+
+.repo-clone,
+.repo-commit {
+  color: var(--color-muted);
+  margin-block: 0.35rem;
+}
+
+.repo-clone code,
+.repo-commit code {
+  font-size: 0.9em;
+}
+
+.repo-commit-meta {
+  margin-inline-start: 0.35rem;
+}
+
+.repo-actions {
+  margin-block-start: 1rem;
+}

@@ -1,10 +1,10 @@
 # Compared to GitHub
 
-rgit covers the git-hosting core: remotes, users and keys, path ACL, fast-forward merge requests, and in-repo shell CI. It is not a GitHub clone. There is no website, and most GitHub products have no counterpart.
+rgit covers the git-hosting core: remotes, users and keys, path ACL, fast-forward merge requests, and in-repo shell CI. It is not a GitHub clone. There is no website on the forge host, and most GitHub products have no counterpart.
 
 `rgit` and `rabun-git` are the same program. Examples use `rgit` after `rgit remote add origin git@HOST`.
 
-A shorter map lives in [What Rabun Git is](what-it-is.md).
+A shorter map lives in [What is Rabun Git?](what-it-is.md).
 
 ## Hosted git
 
@@ -45,7 +45,7 @@ A shorter map lives in [What Rabun Git is](what-it-is.md).
 
 | GitHub | rgit |
 | --- | --- |
-| Web UI, mobile app, Codespaces | None |
+| Web UI, mobile app, Codespaces | Local `rgit view` (Zola on loopback). No hosted gitweb, mobile app, or Codespaces |
 | Issues, Discussions, Projects, Wikis, Pages | None |
 | Packages, Releases, Gists | None (git tags exist; no release artifacts) |
 | Dependabot, security advisories, code scanning | None |
@@ -59,6 +59,7 @@ A shorter map lives in [What Rabun Git is](what-it-is.md).
 | `gh auth login` | `rgit remote add origin git@HOST` then `rgit origin key copy --admin` |
 | `gh repo create` / `list` / `view` | `repo create` / `list` / `show` |
 | `gh repo clone` | `git clone ssh://git@HOST:2222/owner/name.git` |
+| `gh repo view` | `rgit view` (local Zola preview; not a hosted page) |
 | `gh ssh-key add` | `rgit origin key copy` (first key) or `key add USER --file ~/.ssh/id_ed25519.pub` |
 | `gh pr create` / `list` / `view` / `review` / `merge` | `request create` / `list` / `show` / `review` / `merge` |
 | `gh run list` / `view` | `run list` / `show` / `logs` |
@@ -72,6 +73,6 @@ These run the forge. They are not GitHub product analogues:
 
 ## Practical takeaway
 
-rgit is enough if you want private SSH remotes, simple ACL, fast-forward merge requests, and a few `sh -c` jobs on one box. Anything people do in the GitHub website, or with tokens, orgs, issues, or the Actions marketplace, is a gap by design.
+rgit is enough if you want private SSH remotes, simple ACL, fast-forward merge requests, and a few `sh -c` jobs on one box. Anything people do in the GitHub website (except a local `rgit view` of a tree you already have), or with tokens, orgs, issues, or the Actions marketplace, is a gap by design.
 
 Next: [Install](install.md), or the [command reference](commands.md).

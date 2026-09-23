@@ -17,6 +17,21 @@ cd website
 
 You need at least **read**. The clone includes all branches the server has. Merge-request refs (`refs/rabun/requests/…`) are in the same repo if you fetch them; you do not need them for ordinary editing.
 
+## Browse locally
+
+The forge does not serve a website. On this machine, preview the working copy (or a bare repo you can read) with Zola on loopback. Needs **git** and **Zola 0.23.4+** on PATH. First run fetches the DevLab theme into `~/.cache/rabun-git/themes/`.
+
+```bash
+cd website
+rgit view
+# or: rgit view --open
+# or: rgit view /path/to/clone --ref v0.1.0
+```
+
+On the forge host, `rgit view ada/website` reads `$RABUN_GIT_ROOT/repos/ada/website.git` if that directory exists (often from `rabun-git shell`). It does not clone over SSH.
+
+The preview binds **127.0.0.1:1111** by default. It is not `rabun-git serve` and not a public git UI.
+
 ## See remotes and status
 
 ```bash

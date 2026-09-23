@@ -30,7 +30,7 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, `serve`, `shell`, `remote`, `key copy`, and `rgit agent --labels` (the poll loop) work only on the machine that runs them. `key copy` uses host SSH on port 22 (not git port 2222). The others work over SSH or `rgit origin …`.
+`init`, `check`, `status`, `view`, `serve`, `shell`, `remote`, `key copy`, and `rgit agent --labels` (the poll loop) work only on the machine that runs them. `key copy` uses host SSH on port 22 (not git port 2222). The others work over SSH or `rgit origin …`.
 
 On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
 
@@ -58,6 +58,7 @@ After that, `rgit origin repo create ada/website` (or `ssh -p 2222 git@HOST …`
 | `rabun-git check` | Data root writable, `git` on PATH, SSH bind, admin with a key |
 | `rabun-git status` | Companion JSON (`rabun.companion/v1`), no keys |
 | `rabun-git serve [--bind HOST:PORT]` | Listen for git + management commands |
+| `rabun-git view [PATH\|owner/name] [--ref REF] [--bind 127.0.0.1:1111] [--open]` | Loopback Zola preview of a local git tree (needs `zola` 0.23.4+) |
 | `rabun-git shell` | One sudo, then bash as the systemd user (prompt `(rabun-git)`; `exit` to leave) |
 
 ## Named remotes (this machine)

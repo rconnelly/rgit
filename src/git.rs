@@ -149,6 +149,18 @@ pub async fn cat_file(repo: &Path, spec: &str) -> Result<String> {
     git_stdout(repo, &["cat-file", "-p", spec]).await
 }
 
+/// `git cat-file -p <spec>` as bytes (blobs may be binary).
+pub async fn cat_file_bytes(repo: &Path, spec: &str) -> Result<Vec<u8>> {
+    let output = git_output_raw(repo, &["cat-file", "-p", spec]).await?;
+    if !output.status.success() {
+        bail!(
+            "git cat-file failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    Ok(output.stdout)
+}
+
 /// Show a blob at `sha:path` if it exists.
 pub async fn show_path(repo: &Path, sha: &str, path: &str) -> Result<Option<String>> {
     let spec = format!("{sha}:{path}");

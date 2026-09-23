@@ -1,6 +1,6 @@
-# What Rabun Git is
+# What is Rabun Git?
 
-Rabun Git is a **git forge you run yourself**. Teammates use ordinary `git clone` / `git push` over SSH. You manage people, keys, and permissions from the command line. There is no website and nothing is sent to GitHub.com.
+Rabun Git is a **git forge you run yourself**. Teammates use ordinary `git clone` / `git push` over SSH. You manage people, keys, and permissions from the command line. Nothing is sent to GitHub.com. The forge host does not serve a git website; `rgit view` on this machine can preview a local tree in a browser.
 
 This guide assumes you already know a little git: commits, branches, and that a **remote** is another copy of a repository you can push to and fetch from.
 
@@ -37,7 +37,7 @@ Allowed characters: letters, digits, `.`, `_`, `-`. Names cannot start with `.`.
 
 ## What this tool does not do
 
-- No browser UI, issues, wiki, or packages
+- No public browser UI on the forge, issues, wiki, or packages (`rgit view` is local-only)
 - No GitHub Actions `uses:` marketplace
 - Merge is **fast-forward only** (the branch you merge must already contain the target branch)
 - `master` and `main` are **protected**: only a repo or forge **admin** can push them directly. Everyone else opens a merge request.

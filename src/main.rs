@@ -81,6 +81,24 @@ async fn run() -> Result<()> {
             let config = Config::load(cli.config.as_deref())?;
             rabun_git::print_status(&config)
         }
+        Commands::View {
+            target,
+            git_ref,
+            bind,
+            open,
+        } => {
+            let config = Config::load(cli.config.as_deref())?;
+            rabun_git::view::run(
+                &config,
+                rabun_git::view::Options {
+                    target,
+                    git_ref,
+                    bind,
+                    open,
+                },
+            )
+            .await
+        }
         Commands::Serve { bind } => {
             let config = Config::load(cli.config.as_deref())?;
             rabun_git::serve(&config, bind).await

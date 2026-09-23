@@ -2,7 +2,7 @@
 
 `rabun-git` is a systemd unit plus a release archive on an **x86_64 (or aarch64) Ubuntu** host. The same machine can already run Rabun: this forge sits beside `rabun.service`, keeps settings in its own env file, and upserts `[[apps]]` in `/etc/rabun/rabun.toml`. The host never talks to GitHub. This machine (or Actions) packs or downloads the archive and copies it over SSH.
 
-There is no public HTTP git UI and no Caddy virtual host. `serve` listens for git and management commands on **TCP 2222** and writes a loopback companion heartbeat.
+There is no public HTTP git UI and no Caddy virtual host. `serve` listens for git and management commands on **TCP 2222** and writes a loopback companion heartbeat. To browse a tree in a browser, run `rgit view` on this machine (or on the host inside `rabun-git shell`); that is Zola on loopback, not a vhost.
 
 ## 1. Host
 
@@ -101,7 +101,7 @@ Refresh the env file without rewriting the example:
 
 The systemd user is `rabun-git`. Git clients still connect as `git@HOST` on port **2222** (russh; not the unix user). Admin SSH on port 22 is unchanged.
 
-Logs: `journalctl -u rabun-git -f`. Heartbeat: `rabun-git status` or `curl -sS http://127.0.0.1:8792/health`. If `rabun-feeds` already uses `8792` on the same host, set `RABUN_GIT_HEALTH_BIND` to another loopback port. Audit sandboxing with `systemd-analyze security rabun-git`. There is still no public HTTP git UI.
+Logs: `journalctl -u rabun-git -f`. Heartbeat: `rabun-git status` or `curl -sS http://127.0.0.1:8792/health`. If `rabun-feeds` already uses `8792` on the same host, set `RABUN_GIT_HEALTH_BIND` to another loopback port. Audit sandboxing with `systemd-analyze security rabun-git`. There is still no public HTTP git UI. `rgit view` is a local preview only.
 
 Clone URL after DNS points at the host:
 
