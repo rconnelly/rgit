@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-23
+
 ### Added
 
 - `rgit version` on this machine: SemVer 2.0 bumps, Conventional Commits 1.0.0 checks, Keep a Changelog updates, and a `chore(release):` commit plus annotated tag
 - Forge `hooks/update` opt-in policy via `.rabun/version.toml` (`enforce.commits` / `tags` / `manifests`)
 - Version files: `Cargo.toml` / `Cargo.lock`, `package.json` / `package-lock.json`, `pyproject.toml`, `composer.json`, `pubspec.yaml`, `Chart.yaml`, `VERSION` / `version.txt`
+- add rgit version for SemVer, changelog, and commit policy
+
+### Changed
+
+- present Conventional Commits and SemVer as default etiquette
 
 ## [0.12.1] - 2026-09-23
 
@@ -47,7 +54,9 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 - In-repo YAML workflows (`.rabun/workflows`) on push, tag, and request
 - Companion heartbeat (`rabun.companion/v1`): `status.json`, `rabun-git status`, loopback `GET /health`
 
-[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.12.1...HEAD
+
+[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/rconnelly/rgit/releases/tag/v0.13.0
 [0.12.1]: https://github.com/rconnelly/rgit/releases/tag/v0.12.1
 [0.12.0]: https://github.com/rconnelly/rgit/releases/tag/v0.12.0
 [0.1.0]: https://github.com/rconnelly/rgit/releases/tag/v0.1.0
