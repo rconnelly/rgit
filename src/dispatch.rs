@@ -13,7 +13,7 @@ use crate::cli::{
 use crate::names::RepoName;
 use crate::output;
 use crate::store::Store;
-use crate::{git, hook, repo, request, runner};
+use crate::{device, git, hook, repo, request, runner};
 
 /// Run a management command; returns stdout (no trailing requirement).
 pub async fn execute(store: &Store, actor: &Actor, command: Commands) -> Result<String> {
@@ -29,6 +29,9 @@ pub async fn execute_fmt(
     token: Option<&str>,
 ) -> Result<String> {
     match command {
+        Commands::Auth {
+            command: AuthCommands::Device { command },
+        } => device::execute(store, actor, command, json),
         Commands::Auth { command } => auth_cmd(store, actor, command, json, token),
         Commands::User { command } => user(store, actor, command, json),
         Commands::Key { command } => key(store, actor, command, json),
@@ -49,6 +52,8 @@ pub async fn execute_fmt(
         | Commands::Serve { .. }
         | Commands::Shell
         | Commands::Remote { .. }
+        | Commands::Login { .. }
+        | Commands::Logout { .. }
         | Commands::Agent { command: None, .. } => {
             bail!("command is not available here")
         }
@@ -76,6 +81,7 @@ fn auth_cmd(
         AuthCommands::Token {
             command: TokenCommands::Revoke { token },
         } => auth::Command::TokenRevoke { token },
+        AuthCommands::Device { .. } => unreachable!("device commands are handled in execute_fmt"),
     };
     auth::execute(store, actor, inner, json, token)
 }

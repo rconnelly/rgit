@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 ### Added
 
 - `rgit --anonymous auth register --user --password` creates a non-admin web user and issues a token (rgit-web sign-up)
+- `rgit login` device grant: generate an SSH key on this machine, approve it in rgit-web, persist `remotes.toml` identity (`auth device start|poll|show|approve|deny`)
 
 ## [0.15.0] - 2026-09-25
 

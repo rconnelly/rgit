@@ -49,6 +49,9 @@ impl Store {
         if !self.visibility_path().exists() {
             self.save_visibility(&VisibilityFile::default())?;
         }
+        if !self.devices_path().exists() {
+            self.save_devices(&crate::device::DevicesFile::default())?;
+        }
         Ok(())
     }
 
@@ -75,6 +78,10 @@ impl Store {
 
     fn visibility_path(&self) -> PathBuf {
         self.root.join("visibility.yaml")
+    }
+
+    fn devices_path(&self) -> PathBuf {
+        self.root.join("devices.yaml")
     }
 
     /// `keys/<user>.pub`
@@ -359,6 +366,16 @@ impl Store {
     /// Write `visibility.yaml`.
     pub fn save_visibility(&self, file: &VisibilityFile) -> Result<()> {
         write_yaml(&self.visibility_path(), file)
+    }
+
+    /// Load `devices.yaml`.
+    pub fn load_devices(&self) -> Result<crate::device::DevicesFile> {
+        read_yaml(&self.devices_path())
+    }
+
+    /// Write `devices.yaml`.
+    pub fn save_devices(&self, file: &crate::device::DevicesFile) -> Result<()> {
+        write_yaml(&self.devices_path(), file)
     }
 
     /// True when the repo is listed as public.

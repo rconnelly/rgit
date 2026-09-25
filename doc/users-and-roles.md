@@ -74,7 +74,15 @@ cat ~/.ssh/id_ed25519.pub
 
 Copy that one line to the server (file `linus.pub`) and **do not** copy the private key (`id_ed25519` without `.pub`).
 
-The **first** key for a new user must be added by an operator or forge admin (Linus cannot SSH in yet). After that, he can append extra keys himself.
+The **first** key for a new user used to need an operator. If they already have a web password (invite `/signup` or `user passwd`), they attach a laptop key themselves:
+
+```bash
+rgit login --host git.example.com --web https://git.example.com
+```
+
+That generates `~/.config/rabun-git/id_origin_ed25519`, opens the website, and after they approve the code it writes the public key to their account and saves the identity on `origin`. Later `rgit origin repo list` needs no extra login. `rgit logout` forgets the local identity; the forge key stays.
+
+Without a website, the first key is still added by an operator or forge admin (Linus cannot SSH in yet). After that, he can append extra keys himself.
 
 From this machine, over host SSH (port 22, needs sudo on the host):
 
@@ -228,11 +236,12 @@ They can no longer authenticate. Repositories they owned remain on disk; grant s
 | `key add` / `key list` for themselves | yes | yes | yes | yes |
 | `key add` / `key list` for someone else | yes | yes | no | no |
 | `key copy` (this machine → host SSH) | yes (needs sudo on the host) | — | — | — |
+| `login` (this machine → rgit-web) | — | — | — | yes (web password) |
 | `access grant` / `revoke` on a repo | yes | yes | yes (that repo) | no |
 | `repo create` `theirname/…` | yes | yes | if they are that user | yes |
 | `repo create` `other/…` | yes | yes | no | no |
 
-Commands that never work over SSH: `init`, `check`, `status`, `serve`, `key copy`. `key copy` runs on this machine and uses host SSH (port 22).
+Commands that never work over SSH: `init`, `check`, `status`, `serve`, `login`, `logout`, `key copy`. `key copy` runs on this machine and uses host SSH (port 22). `login` uses HTTPS to rgit-web.
 
 ## Where this is stored
 
@@ -240,6 +249,8 @@ Under `$RABUN_GIT_ROOT`:
 
 - `users.yaml` — login + forge admin flag
 - `keys/<user>.pub` — public keys
+- `tokens.yaml` — web bearer token hashes
+- `devices.yaml` — pending `rgit login` grants
 - `access.yaml` — `owner/name` → user → `read` \| `write` \| `admin`
 
 You can read those files; prefer `rabun-git user` / `key` / `access` so they stay valid YAML.

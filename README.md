@@ -21,7 +21,8 @@ Forge admin from this machine (users, keys, repos — not `git push`):
 
 ```bash
 rgit remote add origin git@HOST
-rgit origin key copy ada --admin
+rgit login --web https://HOST
+# without a website: rgit origin key copy ada --admin
 rgit origin repo list
 rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```

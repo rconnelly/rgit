@@ -114,6 +114,30 @@ pub enum Commands {
         #[command(subcommand)]
         command: RemoteCommands,
     },
+    /// Sign in through the website and attach an SSH key (this machine)
+    Login {
+        /// Named remote to save (default `origin`)
+        #[arg(long, default_value = "origin")]
+        remote: String,
+        /// Git host (`rgit.rs`, `git@HOST`, …)
+        #[arg(long)]
+        host: Option<String>,
+        /// rgit-web origin (`https://rgit.rs`)
+        #[arg(long)]
+        web: Option<String>,
+        /// Do not open a browser
+        #[arg(long)]
+        no_open: bool,
+        /// Print saved remotes instead of signing in
+        #[arg(long)]
+        status: bool,
+    },
+    /// Forget the saved SSH identity for a remote (this machine)
+    Logout {
+        /// Named remote (default `origin`)
+        #[arg(long, default_value = "origin")]
+        remote: String,
+    },
     /// Web passwords and session tokens
     Auth {
         #[command(subcommand)]
@@ -370,6 +394,49 @@ pub enum AuthCommands {
         #[command(subcommand)]
         command: TokenCommands,
     },
+    /// Device grant for CLI web sign-on
+    Device {
+        #[command(subcommand)]
+        command: DeviceCommands,
+    },
+}
+
+/// `rabun-git auth device` subcommands.
+#[derive(Subcommand)]
+pub enum DeviceCommands {
+    /// Record a public key and issue device/user codes (`--anonymous`)
+    Start {
+        /// OpenSSH public key
+        #[arg(long = "public-key")]
+        public_key: String,
+        /// Client hostname (display only)
+        #[arg(long)]
+        hostname: Option<String>,
+    },
+    /// Wait for browser approval (`--anonymous`)
+    Poll {
+        /// Secret from `device start`
+        #[arg(long = "device-code")]
+        device_code: String,
+    },
+    /// Fingerprint for the confirmation page
+    Show {
+        /// Short code displayed by the CLI
+        #[arg(long = "user-code")]
+        user_code: String,
+    },
+    /// Attach the stored public key to the signed-in user
+    Approve {
+        /// Short code displayed by the CLI
+        #[arg(long = "user-code")]
+        user_code: String,
+    },
+    /// Reject the pending grant
+    Deny {
+        /// Short code displayed by the CLI
+        #[arg(long = "user-code")]
+        user_code: String,
+    },
 }
 
 /// `rabun-git auth token` subcommands.
@@ -561,6 +628,9 @@ pub enum RemoteCommands {
         /// Host SSH for `key copy` (`user@HOST`, default `$USER@<forge-host>:22`)
         #[arg(long)]
         host: Option<String>,
+        /// rgit-web origin (`https://rgit.rs`)
+        #[arg(long)]
+        web: Option<String>,
     },
     /// List saved remotes
     List,
@@ -679,6 +749,8 @@ impl Commands {
                 | Commands::Serve { .. }
                 | Commands::Shell
                 | Commands::Remote { .. }
+                | Commands::Login { .. }
+                | Commands::Logout { .. }
                 | Commands::Hook { .. }
                 | Commands::Key {
                     command: KeyCommands::Copy { .. },
@@ -689,8 +761,9 @@ impl Commands {
 
     /// Host commands that write forge data and must run as the systemd user.
     ///
-    /// `auth login|logout|whoami|register` are excluded so `rgit-web` (user
-    /// `rgit-web`, group `rabun-git`) can issue tokens and accept sign-up.
+    /// `auth login|logout|whoami|register|device` are excluded so `rgit-web` (user
+    /// `rgit-web`, group `rabun-git`) can issue tokens, accept sign-up, and
+    /// complete CLI device grants.
     pub fn requires_service_uid(&self) -> bool {
         matches!(
             self,
@@ -737,6 +810,27 @@ mod tests {
             }
         }
         .requires_service_uid());
+        assert!(!Commands::Auth {
+            command: AuthCommands::Device {
+                command: DeviceCommands::Start {
+                    public_key: "ssh-ed25519 AAAA".into(),
+                    hostname: None,
+                },
+            },
+        }
+        .requires_service_uid());
+        assert!(Commands::Login {
+            remote: "origin".into(),
+            host: None,
+            web: None,
+            no_open: false,
+            status: false,
+        }
+        .ssh_forbidden());
+        assert!(Commands::Logout {
+            remote: "origin".into(),
+        }
+        .ssh_forbidden());
         assert!(!Commands::Check.requires_service_uid());
         assert!(Commands::View {
             target: None,

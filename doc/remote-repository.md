@@ -30,7 +30,7 @@ You can run create on the server:
 rabun-git repo create ada/website
 ```
 
-Or from this machine, after `rgit remote add origin git@git.example.com`:
+Or from this machine, after `rgit login --web https://git.example.com` (or `rgit remote add origin git@git.example.com` plus a key):
 
 ```bash
 rabun-git origin repo create ada/website

@@ -41,6 +41,12 @@ rgit remote add origin git@HOST
 rgit origin key copy ada --admin --file ~/.ssh/id_ed25519.pub
 ```
 
+If rgit-web is already up and `ada` has a web password, this machine can skip host SSH:
+
+```bash
+rgit login --host HOST --web https://HOST
+```
+
 Or on the **server**:
 
 ```bash

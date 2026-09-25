@@ -15,7 +15,7 @@ use crate::store::atomic_write;
 /// Commands that cannot be used as a remote name.
 pub const RESERVED_NAMES: &[&str] = &[
     "init", "check", "status", "view", "serve", "shell", "user", "key", "repo", "access",
-    "request", "run", "hook", "remote", "help", "agent", "version",
+    "request", "run", "hook", "remote", "help", "agent", "version", "auth", "login", "logout",
 ];
 
 /// Parsed SSH target for a named remote.
@@ -40,6 +40,8 @@ pub struct ClientInvoke {
     pub identity: Option<PathBuf>,
     /// Host SSH for `key copy` (port 22).
     pub admin: RemoteTarget,
+    /// rgit-web origin, if saved.
+    pub web: Option<String>,
     /// Argv after removing the remote name (may include `--identity`).
     pub args: Vec<String>,
 }
@@ -58,6 +60,22 @@ struct RemoteEntry {
     /// Host SSH for `key copy` (`user@HOST`, default `$USER@<forge-host>:22`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     host: Option<String>,
+    /// rgit-web origin (`https://rgit.rs`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    web: Option<String>,
+}
+
+/// Snapshot of a saved remote (for `rgit login`).
+#[derive(Clone, Debug)]
+pub struct SavedRemote {
+    /// Forge SSH URL.
+    pub url: String,
+    /// Private key path.
+    pub identity: Option<PathBuf>,
+    /// Host SSH for `key copy`.
+    pub host: Option<String>,
+    /// rgit-web origin.
+    pub web: Option<String>,
 }
 
 /// Path to the remotes file on this machine (`RABUN_GIT_REMOTES` or XDG config).
@@ -82,6 +100,84 @@ pub fn remotes_path() -> PathBuf {
     base.join("rabun-git").join("remotes.toml")
 }
 
+/// Directory that holds `remotes.toml` and generated identities.
+pub fn config_dir() -> PathBuf {
+    remotes_path()
+        .parent()
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| PathBuf::from("."))
+}
+
+/// Load one saved remote, if present.
+pub fn get(path: &Path, name: &str) -> Result<Option<SavedRemote>> {
+    let file = load(path)?;
+    Ok(file.remotes.get(name).map(|entry| SavedRemote {
+        url: entry.url.clone(),
+        identity: entry.identity.clone(),
+        host: entry.host.clone(),
+        web: entry.web.clone(),
+    }))
+}
+
+/// Insert or update URL, identity, and web for `name`.
+pub fn upsert(
+    path: &Path,
+    name: &str,
+    url: &str,
+    identity: Option<PathBuf>,
+    web: Option<String>,
+) -> Result<()> {
+    validate_name(name)?;
+    parse_url(url)?;
+    let mut file = load(path)?;
+    if let Some(existing) = file.remotes.get_mut(name) {
+        existing.url = url.to_string();
+        existing.identity = identity;
+        if web.is_some() {
+            existing.web = web;
+        }
+    } else {
+        file.remotes.insert(
+            name.to_string(),
+            RemoteEntry {
+                url: url.to_string(),
+                identity,
+                host: None,
+                web,
+            },
+        );
+    }
+    save(path, &file)
+}
+
+/// Drop the saved identity for `name` (URL stays).
+pub fn clear_identity(path: &Path, name: &str) -> Result<()> {
+    let mut file = load(path)?;
+    let Some(entry) = file.remotes.get_mut(name) else {
+        bail!("remote {name} not found");
+    };
+    entry.identity = None;
+    save(path, &file)
+}
+
+/// Human-readable list of remotes and whether an identity is saved.
+pub fn status_text(path: &Path) -> Result<String> {
+    let file = load(path)?;
+    if file.remotes.is_empty() {
+        return Ok("not logged in (no remotes)\n".into());
+    }
+    let mut lines = Vec::new();
+    for (name, entry) in &file.remotes {
+        let ident = match &entry.identity {
+            Some(path) => path.display().to_string(),
+            None => "(no identity)".into(),
+        };
+        let web = entry.web.as_deref().unwrap_or("(no web)");
+        lines.push(format!("{name} {} {web} {ident}", entry.url));
+    }
+    Ok(lines.join("\n") + "\n")
+}
+
 /// Run `remote add|list|show|remove` against the default remotes file.
 pub fn manage(command: RemoteCommands) -> Result<String> {
     manage_at(&remotes_path(), command)
@@ -95,6 +191,7 @@ pub fn manage_at(path: &Path, command: RemoteCommands) -> Result<String> {
             url,
             identity,
             host,
+            web,
         } => {
             validate_name(&name)?;
             parse_url(&url)?;
@@ -111,6 +208,7 @@ pub fn manage_at(path: &Path, command: RemoteCommands) -> Result<String> {
                     url: url.clone(),
                     identity,
                     host,
+                    web,
                 },
             );
             save(path, &file)?;
@@ -138,6 +236,9 @@ pub fn manage_at(path: &Path, command: RemoteCommands) -> Result<String> {
             }
             if let Some(host) = &entry.host {
                 lines.push(format!("host: {host}"));
+            }
+            if let Some(web) = &entry.web {
+                lines.push(format!("web: {web}"));
             }
             Ok(lines.join("\n") + "\n")
         }
@@ -187,6 +288,7 @@ where
         target,
         identity: entry.identity.clone(),
         admin,
+        web: entry.web.clone(),
         args: rest,
     }))
 }
@@ -586,6 +688,7 @@ mod tests {
                 url: "git@damascus".into(),
                 identity: None,
                 host: None,
+                web: None,
             },
         )
         .unwrap_err();
@@ -598,6 +701,7 @@ mod tests {
                 url: "git@damascus".into(),
                 identity: None,
                 host: None,
+                web: None,
             },
         )
         .unwrap();
@@ -637,6 +741,7 @@ mod tests {
                 url: "git@damascus:2222".into(),
                 identity: Some(PathBuf::from("/id")),
                 host: Some("ryan@damascus".into()),
+                web: None,
             },
         )
         .unwrap();

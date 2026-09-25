@@ -117,6 +117,35 @@ async fn run() -> Result<()> {
             rabun_git::serve(&config, bind).await
         }
         Commands::Shell | Commands::Remote { .. } => unreachable!("handled above"),
+        Commands::Login {
+            remote,
+            host,
+            web,
+            no_open,
+            status,
+        } => {
+            if status {
+                print!("{}", rabun_git::login::status(&remote::remotes_path())?);
+                return Ok(());
+            }
+            let out = rabun_git::login::run(rabun_git::login::LoginRequest {
+                remote,
+                host,
+                web,
+                identity: cli.identity,
+                no_open,
+                remotes_file: remote::remotes_path(),
+            })?;
+            print!("{out}");
+            Ok(())
+        }
+        Commands::Logout { remote } => {
+            print!(
+                "{}",
+                rabun_git::login::logout(&remote::remotes_path(), &remote)?
+            );
+            Ok(())
+        }
         other => {
             let json = cli.json;
             let token = cli.token.clone();
@@ -177,6 +206,39 @@ fn run_named_remote(invoke: remote::ClientInvoke) -> Result<()> {
             host.as_deref(),
             cli.identity.as_deref(),
         );
+    }
+    if let Commands::Login {
+        web,
+        no_open,
+        status,
+        ..
+    } = cli.command
+    {
+        if status {
+            print!("{}", rabun_git::login::status(&remote::remotes_path())?);
+            return Ok(());
+        }
+        let host = format!(
+            "{}@{}:{}",
+            invoke.target.user, invoke.target.host, invoke.target.port
+        );
+        let out = rabun_git::login::run(rabun_git::login::LoginRequest {
+            remote: invoke.name,
+            host: Some(host),
+            web: web.or(invoke.web),
+            identity: cli.identity.or(invoke.identity),
+            no_open,
+            remotes_file: remote::remotes_path(),
+        })?;
+        print!("{out}");
+        return Ok(());
+    }
+    if matches!(cli.command, Commands::Logout { .. }) {
+        print!(
+            "{}",
+            rabun_git::login::logout(&remote::remotes_path(), &invoke.name)?
+        );
+        return Ok(());
     }
     if cli.command.ssh_forbidden() {
         bail!("run this on the forge host, not through `{}`", invoke.name);

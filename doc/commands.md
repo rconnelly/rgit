@@ -17,7 +17,8 @@ On this machine, save a forge host once, then use that name as the first word (t
 
 ```bash
 rgit remote add origin git@git.example.com
-rgit origin key copy ada --admin
+rgit login --web https://git.example.com
+# or first admin without the website: rgit origin key copy ada --admin
 rgit origin repo list
 rgit origin key add ada --file ~/.ssh/id_ed25519.pub
 ```
@@ -30,7 +31,7 @@ Over SSH, omit the `rabun-git` prefix and use port **2222**:
 ssh -p 2222 git@git.example.com repo list
 ```
 
-`init`, `check`, `status`, `view`, `version`, `serve`, `shell`, `remote`, `key copy`, and `rgit agent --labels` (the poll loop) work only on the machine that runs them. `key copy` uses host SSH on port 22 (not git port 2222). The others work over SSH or `rgit origin …`.
+`init`, `check`, `status`, `view`, `version`, `serve`, `shell`, `remote`, `login`, `logout`, `key copy`, and `rgit agent --labels` (the poll loop) work only on the machine that runs them. `key copy` uses host SSH on port 22 (not git port 2222). `login` talks HTTPS to rgit-web. The others work over SSH or `rgit origin …`.
 
 On a systemd host (`/etc/rabun-git/rabun-git.env`), mutating commands must run as the `rabun-git` user:
 
@@ -71,10 +72,13 @@ After that, `rgit origin repo create ada/website` (or `ssh -p 2222 git@HOST …`
 
 | Command | What it does |
 | --- | --- |
-| `rabun-git remote add NAME URL [--identity FILE] [--host user@HOST]` | Save a forge host (`origin` is the usual name) |
+| `rabun-git remote add NAME URL [--identity FILE] [--host user@HOST] [--web URL]` | Save a forge host (`origin` is the usual name) |
 | `rabun-git remote list` | List saved names and URLs |
-| `rabun-git remote show NAME` | URL, optional identity, and host SSH for `key copy` |
+| `rabun-git remote show NAME` | URL, optional identity, host SSH, and web origin |
 | `rabun-git remote remove NAME` | Delete a saved name |
+| `rabun-git login [--host HOST] [--web URL] [--remote origin] [--no-open]` | Generate a key, open rgit-web, attach the public key after you approve |
+| `rabun-git login --status` | Print saved remotes and identities |
+| `rabun-git logout [--remote origin]` | Forget the local identity (forge key stays) |
 | `rabun-git NAME …` | Run a forge command on that host |
 
 URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Default SSH user `git`, default port `2222`.
@@ -94,6 +98,11 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 | `rabun-git auth token create [USER]` | Issue a token without a password |
 | `rabun-git auth token list [--user NAME]` | List token prefixes |
 | `rabun-git auth token revoke TOKEN` | Revoke by secret or prefix |
+| `rabun-git --anonymous auth device start --public-key 'ssh-ed25519 …' [--hostname NAME]` | Begin CLI web sign-on (rgit-web) |
+| `rabun-git --anonymous auth device poll --device-code SECRET` | `pending` / `authorized` / `denied` / `expired` |
+| `rabun-git auth device show --user-code ABCD-EFGH` | Hostname and fingerprint for the confirm page |
+| `rabun-git auth device approve --user-code ABCD-EFGH` | Attach the stored public key to the signed-in user |
+| `rabun-git auth device deny --user-code ABCD-EFGH` | Reject the pending grant |
 | `rabun-git key add USER --file KEY.pub` | Append OpenSSH public keys from a local file |
 | `rabun-git key add USER --literal 'ssh-ed25519 AAAA…'` | Append a key given on the command line |
 | `rabun-git key list USER` | Fingerprints only |

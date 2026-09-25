@@ -23,6 +23,7 @@ SSH is the only public network surface (default `0.0.0.0:2222`; russh username `
 - `users.yaml` — login + forge admin flag + optional web password hash
 - `keys/<user>.pub` — OpenSSH public keys
 - `tokens.yaml` — SHA-256 hashes of web bearer tokens (`rgit_…`)
+- `devices.yaml` — pending CLI web sign-on grants (device-code hashes + public key)
 - `visibility.yaml` — `owner/name` → `public` (missing means private)
 - `access.yaml` — `owner/name` → user → `read` \| `write` \| `admin`
 - `repos/<owner>/<name>.git/` — bare repositories
