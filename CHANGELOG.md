@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-09-25
+
 ### Added
 
 - `rgit --anonymous auth register --user --password` creates a non-admin web user and issues a token (rgit-web sign-up)
 - `rgit login` device grant: generate an SSH key on this machine, approve it in rgit-web, persist `remotes.toml` identity (`auth device start|poll|show|approve|deny`)
+- add anonymous web sign-up and empty-repo browse for rgit-web
+- add rgit login device grant so a web session can attach a laptop SSH key
+
+### Changed
+
+- describe mounting a block volume at /var/lib/rabun-git
 
 ## [0.15.0] - 2026-09-25
 
@@ -78,7 +86,9 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 
 
-[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.15.0...HEAD
+
+[Unreleased]: https://github.com/rconnelly/rgit/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/rconnelly/rgit/releases/tag/v0.16.0
 [0.15.0]: https://github.com/rconnelly/rgit/releases/tag/v0.15.0
 [0.14.0]: https://github.com/rconnelly/rgit/releases/tag/v0.14.0
 [0.13.0]: https://github.com/rconnelly/rgit/releases/tag/v0.13.0
