@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+### Added
+
+- `rgit --token … auth passwd --current --password` changes the signed-in user's web password (rgit-web); other sessions are revoked
+
 ## [0.16.0] - 2026-09-25
 
 ### Added

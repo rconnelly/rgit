@@ -93,6 +93,7 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 | `rabun-git user passwd NAME --password …` | Set a web password (SSH still uses keys) |
 | `rabun-git auth login --user NAME --password …` | Issue a bearer token for `rgit-web` |
 | `rabun-git --anonymous auth register --user NAME --password …` | Create a non-admin user and issue a token (web sign-up) |
+| `rabun-git --token … auth passwd --current … --password …` | Change your web password while signed in; other sessions are revoked |
 | `rabun-git auth whoami` | Current actor (`--token` or operator) |
 | `rabun-git auth logout` | Revoke `--token` |
 | `rabun-git auth token create [USER]` | Issue a token without a password |
@@ -166,7 +167,7 @@ ssh://git@HOST:2222/owner/name.git
 | `RABUN_GIT_SSH_IDENTITY` | Private key for `rabun-git origin …` |
 | `RABUN_GIT_JSON` | Same as `--json` (machine-readable stdout for `rgit-web`) |
 | `RABUN_GIT_TOKEN` | Bearer token (`rgit_…`) for web identity |
-| `RABUN_GIT_PASSWORD` | Web password for `auth login` / `user passwd` |
+| `RABUN_GIT_PASSWORD` | Web password for `auth login` / `auth passwd` / `user passwd` |
 | `RABUN_GIT_PUBLIC_HOST` | Host name used in clone URLs |
 
 Special push to open a request:

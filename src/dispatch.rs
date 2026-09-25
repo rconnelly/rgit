@@ -70,6 +70,7 @@ fn auth_cmd(
     let inner = match command {
         AuthCommands::Login { user, password } => auth::Command::Login { user, password },
         AuthCommands::Register { user, password } => auth::Command::Register { user, password },
+        AuthCommands::Passwd { current, password } => auth::Command::Passwd { current, password },
         AuthCommands::Logout => auth::Command::Logout,
         AuthCommands::Whoami => auth::Command::Whoami,
         AuthCommands::Token {

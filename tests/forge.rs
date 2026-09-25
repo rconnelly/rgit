@@ -249,4 +249,30 @@ fn web_password_and_token() {
     let token = session.token.expect("token");
     let actor = rabun_git::auth::actor_from_token(&store, &token).unwrap();
     assert_eq!(actor, Actor::User("ada".into()));
+    rabun_git::auth::execute(
+        &store,
+        &actor,
+        rabun_git::auth::Command::Passwd {
+            current: "correct-horse".into(),
+            password: "new-secret".into(),
+        },
+        true,
+        Some(&token),
+    )
+    .unwrap();
+    assert_eq!(
+        rabun_git::auth::actor_from_token(&store, &token).unwrap(),
+        Actor::User("ada".into())
+    );
+    rabun_git::auth::execute(
+        &store,
+        &Actor::Anonymous,
+        rabun_git::auth::Command::Login {
+            user: "ada".into(),
+            password: "new-secret".into(),
+        },
+        true,
+        None,
+    )
+    .unwrap();
 }

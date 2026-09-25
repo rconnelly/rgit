@@ -20,7 +20,7 @@ A shorter map lives in [What is Rabun Git?](what-it-is.md).
 
 | GitHub | `gh` | rgit | Gap |
 | --- | --- | --- | --- |
-| Sign-up, orgs, teams, SSO | `gh auth` | `rgit login` / web invite sign-up (`auth register`); `rgit origin user add` | No orgs, teams, or SSO |
+| Sign-up, orgs, teams, SSO | `gh auth` | `rgit login` / web invite sign-up (`auth register`); `auth passwd` while signed in; `rgit origin user add` | No orgs, teams, or SSO |
 | SSH keys on the account | Settings / `gh ssh-key` | `rgit login` (web handshake), `rgit origin key copy` / `key add` / `key list` | First key via website or host SSH (`key copy`); fingerprints only; no deploy keys, PATs, or fine-grained tokens |
 | Collaborators (read/write/admin) | `gh api` / UI | `rgit origin access grant` / `revoke` | Three roles only; no CODEOWNERS; `main` / `master` are always protected |
 | Outside collaborators, GitHub Apps | — | — | None |

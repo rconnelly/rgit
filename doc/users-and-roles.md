@@ -228,6 +228,24 @@ They can no longer authenticate. Repositories they owned remain on disk; grant s
 
 ---
 
+## Workflow: change your web password
+
+SSH still uses keys. This is the website password.
+
+While signed in (`--token` from rgit-web, or over SSH as yourself), prove the current password and set a new one. Other web sessions are revoked; this token stays valid:
+
+```bash
+rgit --token rgit_… auth passwd --current 'old-secret' --password 'new-secret'
+```
+
+An operator or forge admin can still reset anyone without the current password:
+
+```bash
+rabun-git user passwd linus --password 'new-secret'
+```
+
+---
+
 ## Who is allowed to run these commands
 
 | Command | Operator on the server | Forge admin over SSH | Repo admin over SSH | The user themselves |
@@ -237,6 +255,7 @@ They can no longer authenticate. Repositories they owned remain on disk; grant s
 | `key add` / `key list` for someone else | yes | yes | no | no |
 | `key copy` (this machine → host SSH) | yes (needs sudo on the host) | — | — | — |
 | `login` (this machine → rgit-web) | — | — | — | yes (web password) |
+| `auth passwd` (own web password) | no (use `user passwd`) | own account | own account | yes (current password) |
 | `access grant` / `revoke` on a repo | yes | yes | yes (that repo) | no |
 | `repo create` `theirname/…` | yes | yes | if they are that user | yes |
 | `repo create` `other/…` | yes | yes | no | no |

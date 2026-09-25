@@ -27,6 +27,8 @@ pub enum Command {
     Login { user: String, password: String },
     /// Create a non-admin user with a password and issue a token.
     Register { user: String, password: String },
+    /// Replace the signed-in user's password after verifying the current one.
+    Passwd { current: String, password: String },
     /// Revoke the current `--token`.
     Logout,
     /// Describe the current actor.
@@ -183,6 +185,9 @@ pub fn execute(
     match command {
         Command::Login { user, password } => login(store, &user, &password, json),
         Command::Register { user, password } => register(store, actor, &user, &password, json),
+        Command::Passwd { current, password } => {
+            change_password(store, actor, &current, &password, json, token)
+        }
         Command::Logout => logout(store, token, json),
         Command::Whoami => whoami(store, actor, json),
         Command::TokenCreate { user } => token_create(store, actor, user.as_deref(), json),
@@ -227,6 +232,48 @@ fn register(
     store.add_user(user, false)?;
     store.set_password_hash(user, Some(&hash))?;
     issue_session(store, user, false, json, "registered")
+}
+
+fn change_password(
+    store: &Store,
+    actor: &Actor,
+    current: &str,
+    password: &str,
+    json: bool,
+    token: Option<&str>,
+) -> Result<String> {
+    let Actor::User(user) = actor else {
+        bail!("sign in to change your password");
+    };
+    let users = store.load_users()?;
+    let Some(record) = users.by_name(user) else {
+        bail!("user {user} not found");
+    };
+    let Some(hash) = record.password_hash.as_deref() else {
+        bail!("user {user} has no web password; rgit user passwd {user}");
+    };
+    if !verify_password_hash(current, hash)? {
+        bail!("invalid user or password");
+    }
+    if current == password {
+        bail!("new password must be different from the current password");
+    }
+    let new_hash = hash_password(password)?;
+    store.set_password_hash(user, Some(&new_hash))?;
+    let keep_hash = token
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(token_hash);
+    let mut tokens = store.load_tokens()?;
+    tokens
+        .tokens
+        .retain(|row| row.user != *user || keep_hash.as_deref() == Some(row.hash.as_str()));
+    store.save_tokens(&tokens)?;
+    output::pick(
+        json,
+        &serde_json::json!({ "ok": true, "user": user }),
+        format!("password updated for {user}\n"),
+    )
 }
 
 fn login(store: &Store, user: &str, password: &str, json: bool) -> Result<String> {
@@ -467,5 +514,93 @@ mod tests {
         )
         .unwrap_err();
         assert!(signed_in.to_string().contains("already signed in"));
+    }
+
+    #[test]
+    fn change_password_while_signed_in() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = Store::open(tmp.path());
+        store.ensure_layout().unwrap();
+        store.add_user("ada", false).unwrap();
+        set_password(&store, &Actor::Operator, "ada", "correct-horse").unwrap();
+        let first = login(&store, "ada", "correct-horse", true).unwrap();
+        let session: Session = serde_json::from_str(first.trim()).unwrap();
+        let token = session.token.expect("token");
+        let other = store.issue_token("ada").unwrap();
+
+        let anonymous = execute(
+            &store,
+            &Actor::Anonymous,
+            Command::Passwd {
+                current: "correct-horse".into(),
+                password: "new-secret".into(),
+            },
+            true,
+            None,
+        )
+        .unwrap_err();
+        assert!(anonymous.to_string().contains("sign in"));
+
+        let wrong = execute(
+            &store,
+            &Actor::User("ada".into()),
+            Command::Passwd {
+                current: "wrong-password".into(),
+                password: "new-secret".into(),
+            },
+            true,
+            Some(&token),
+        )
+        .unwrap_err();
+        assert!(wrong.to_string().contains("invalid user or password"));
+
+        let same = execute(
+            &store,
+            &Actor::User("ada".into()),
+            Command::Passwd {
+                current: "correct-horse".into(),
+                password: "correct-horse".into(),
+            },
+            true,
+            Some(&token),
+        )
+        .unwrap_err();
+        assert!(same.to_string().contains("must be different"));
+
+        let short = execute(
+            &store,
+            &Actor::User("ada".into()),
+            Command::Passwd {
+                current: "correct-horse".into(),
+                password: "short".into(),
+            },
+            true,
+            Some(&token),
+        )
+        .unwrap_err();
+        assert!(short.to_string().contains("at least"));
+
+        let out = execute(
+            &store,
+            &Actor::User("ada".into()),
+            Command::Passwd {
+                current: "correct-horse".into(),
+                password: "new-secret".into(),
+            },
+            true,
+            Some(&token),
+        )
+        .unwrap();
+        let body: serde_json::Value = serde_json::from_str(out.trim()).unwrap();
+        assert_eq!(body["ok"], true);
+        assert_eq!(body["user"], "ada");
+
+        assert_eq!(
+            actor_from_token(&store, &token).unwrap(),
+            Actor::User("ada".into())
+        );
+        assert!(actor_from_token(&store, &other).is_err());
+        login(&store, "ada", "correct-horse", true).unwrap_err();
+        login(&store, "ada", "new-secret", true).unwrap();
     }
 }

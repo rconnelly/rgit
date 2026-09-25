@@ -385,6 +385,15 @@ pub enum AuthCommands {
         #[arg(long, env = "RABUN_GIT_PASSWORD")]
         password: String,
     },
+    /// Change the signed-in user's web password (requires `--token` or SSH)
+    Passwd {
+        /// Current password
+        #[arg(long)]
+        current: String,
+        /// New password
+        #[arg(long, env = "RABUN_GIT_PASSWORD")]
+        password: String,
+    },
     /// Revoke the current `--token`
     Logout,
     /// Describe the current actor
@@ -761,9 +770,9 @@ impl Commands {
 
     /// Host commands that write forge data and must run as the systemd user.
     ///
-    /// `auth login|logout|whoami|register|device` are excluded so `rgit-web` (user
-    /// `rgit-web`, group `rabun-git`) can issue tokens, accept sign-up, and
-    /// complete CLI device grants.
+    /// `auth login|logout|whoami|register|passwd|device` are excluded so `rgit-web`
+    /// (user `rgit-web`, group `rabun-git`) can issue tokens, accept sign-up,
+    /// change a signed-in password, and complete CLI device grants.
     pub fn requires_service_uid(&self) -> bool {
         matches!(
             self,
@@ -817,6 +826,13 @@ mod tests {
                     hostname: None,
                 },
             },
+        }
+        .requires_service_uid());
+        assert!(!Commands::Auth {
+            command: AuthCommands::Passwd {
+                current: "correct-horse".into(),
+                password: "new-secret".into(),
+            }
         }
         .requires_service_uid());
         assert!(Commands::Login {
