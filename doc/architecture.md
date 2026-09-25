@@ -57,7 +57,7 @@ Stored in git so they clone with the repo:
 
 ## systemd
 
-Pack this checkout and copy it onto Ubuntu over SSH (same flow as Burton and Rabun): [deploy Ubuntu](deploy-ubuntu.md). The unit shipped in `deploy/ubuntu/rabun-git.service` runs as user `rabun-git` with forge data under `/var/lib/rabun-git`. Git clients still use `ssh://git@HOST:2222/…`.
+Pack this checkout and copy it onto Ubuntu over SSH (same flow as Burton and Rabun): [deploy Ubuntu](deploy-ubuntu.md). The unit shipped in `deploy/ubuntu/rabun-git.service` runs as user `rabun-git` with forge data under `/var/lib/rabun-git`. Git clients still use `ssh://git@HOST:2222/…`. To move that directory onto a block volume, see [storage volume](storage-volume.md).
 
 ```ini
 [Unit]

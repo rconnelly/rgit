@@ -18,7 +18,7 @@ If you know `git clone`, `git commit`, and `git push`, start at the top and foll
 10. [Command reference](commands.md) — CLI and SSH cheat sheet
 11. [Compared to GitHub](compared-to-github.md) — feature and `gh` command gap analysis
 
-Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md).
+Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md). Extra disk for `repos/`: [storage volume](storage-volume.md).
 
 ## Two jobs you will do
 

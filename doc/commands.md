@@ -170,4 +170,5 @@ git push origin HEAD:refs/rabun/requests/new/my-branch
 - [Versioning](versioning.md)
 - [Architecture and systemd](architecture.md)
 - [Ubuntu pack/push](deploy-ubuntu.md)
+- [Storage volume](storage-volume.md)
 - [User guide index](README.md)

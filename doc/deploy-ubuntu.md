@@ -99,6 +99,8 @@ Refresh the env file without rewriting the example:
 | `/etc/systemd/system/rabun-git.service` | `serve` (git SSH `0.0.0.0:2222`, loopback `GET /health` on `127.0.0.1:8792`) |
 | `/etc/rabun/rabun.toml` | Rabun app manifest (`[[apps]] name = "git"`) |
 
+To put `repos/` on a block volume without changing `RABUN_GIT_ROOT`, mount the disk at `/var/lib/rabun-git`: [storage volume](storage-volume.md).
+
 The systemd user is `rabun-git`. Git clients still connect as `git@HOST` on port **2222** (russh; not the unix user). Admin SSH on port 22 is unchanged.
 
 Logs: `journalctl -u rabun-git -f`. Heartbeat: `rabun-git status` or `curl -sS http://127.0.0.1:8792/health`. If `rabun-feeds` already uses `8792` on the same host, set `RABUN_GIT_HEALTH_BIND` to another loopback port. Audit sandboxing with `systemd-analyze security rabun-git`. There is still no public HTTP git UI. `rgit view` is a local preview only.
