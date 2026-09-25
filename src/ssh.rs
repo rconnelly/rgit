@@ -13,7 +13,6 @@ use russh::server::{Auth, ChannelOpenHandle, Handle, Handler, Msg, Server, Sessi
 use russh::{Channel, ChannelId, ChannelMsg};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use tokio::process::Command;
 
 use crate::acl::{self, Actor, Role};
 use crate::cli::Cli;
@@ -324,7 +323,7 @@ async fn handle_git(
         GitService::Upload => "upload-pack",
         GitService::Receive => "receive-pack",
     };
-    let mut child = Command::new("git")
+    let mut child = git::command()
         .arg(sub)
         .arg(&path)
         .env("RABUN_GIT_USER", user)

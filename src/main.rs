@@ -21,6 +21,8 @@ const DEFAULT_RUN_AS: &str = "rabun-git";
 const SERVICE_HOME: &str = "/var/lib/rabun-git";
 /// Interactive bash overwrites env `PS1`; this rcfile sets the session prompt.
 const SHELL_RC: &str = r#"export RABUN_GIT_SHELL=1
+export RABUN_GIT_ROOT="${RABUN_GIT_ROOT:-/var/lib/rabun-git}"
+export RABUN_GIT_CONFIG="${RABUN_GIT_CONFIG:-/etc/rabun-git/rabun-git.toml}"
 cd /var/lib/rabun-git 2>/dev/null || true
 PS1='\[\e[0;36m\](rabun-git)\[\e[0m\] \w \$ '
 "#;
@@ -287,6 +289,7 @@ mod tests {
     fn shell_rc_sets_session_prompt() {
         assert!(super::SHELL_RC.contains("(rabun-git)"));
         assert!(super::SHELL_RC.contains("RABUN_GIT_SHELL=1"));
+        assert!(super::SHELL_RC.contains("RABUN_GIT_ROOT="));
     }
 
     #[test]

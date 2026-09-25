@@ -88,6 +88,7 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 | `rabun-git user remove NAME` | Delete user, keys, grants, and web tokens |
 | `rabun-git user passwd NAME --password …` | Set a web password (SSH still uses keys) |
 | `rabun-git auth login --user NAME --password …` | Issue a bearer token for `rgit-web` |
+| `rabun-git --anonymous auth register --user NAME --password …` | Create a non-admin user and issue a token (web sign-up) |
 | `rabun-git auth whoami` | Current actor (`--token` or operator) |
 | `rabun-git auth logout` | Revoke `--token` |
 | `rabun-git auth token create [USER]` | Issue a token without a password |

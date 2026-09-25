@@ -25,6 +25,8 @@ const MIN_PASSWORD: usize = 8;
 pub enum Command {
     /// Verify password and issue a token.
     Login { user: String, password: String },
+    /// Create a non-admin user with a password and issue a token.
+    Register { user: String, password: String },
     /// Revoke the current `--token`.
     Logout,
     /// Describe the current actor.
@@ -180,12 +182,51 @@ pub fn execute(
 ) -> Result<String> {
     match command {
         Command::Login { user, password } => login(store, &user, &password, json),
+        Command::Register { user, password } => register(store, actor, &user, &password, json),
         Command::Logout => logout(store, token, json),
         Command::Whoami => whoami(store, actor, json),
         Command::TokenCreate { user } => token_create(store, actor, user.as_deref(), json),
         Command::TokenList { user } => token_list(store, actor, user.as_deref(), json),
         Command::TokenRevoke { token: raw } => token_revoke(store, actor, &raw, json),
     }
+}
+
+fn issue_session(
+    store: &Store,
+    user: &str,
+    admin: bool,
+    json: bool,
+    action: &str,
+) -> Result<String> {
+    let raw = store.issue_token(user)?;
+    let session = Session {
+        token: Some(raw.clone()),
+        user: user.to_string(),
+        admin,
+        actor: "user".into(),
+    };
+    output::pick(json, &session, format!("{action} {user}\ntoken {raw}\n"))
+}
+
+fn register(
+    store: &Store,
+    actor: &Actor,
+    user: &str,
+    password: &str,
+    json: bool,
+) -> Result<String> {
+    match actor {
+        Actor::User(_) => bail!("already signed in"),
+        Actor::Anonymous | Actor::Operator => {}
+    }
+    valid_user(user)?;
+    let hash = hash_password(password)?;
+    if store.load_users()?.by_name(user).is_some() {
+        bail!("user {user} already exists");
+    }
+    store.add_user(user, false)?;
+    store.set_password_hash(user, Some(&hash))?;
+    issue_session(store, user, false, json, "registered")
 }
 
 fn login(store: &Store, user: &str, password: &str, json: bool) -> Result<String> {
@@ -200,21 +241,7 @@ fn login(store: &Store, user: &str, password: &str, json: bool) -> Result<String
     if !verify_password_hash(password, hash)? {
         bail!("invalid user or password");
     }
-    let raw = store.issue_token(user)?;
-    let session = Session {
-        token: Some(raw),
-        user: user.to_string(),
-        admin: record.admin,
-        actor: "user".into(),
-    };
-    output::pick(
-        json,
-        &session,
-        format!(
-            "logged in as {user}\ntoken {}\n",
-            session.token.as_deref().unwrap_or("")
-        ),
-    )
+    issue_session(store, user, record.admin, json, "logged in as")
 }
 
 fn logout(store: &Store, token: Option<&str>, json: bool) -> Result<String> {
@@ -413,5 +440,32 @@ mod tests {
         assert_eq!(actor, Actor::User("ada".into()));
         store.revoke_token(&token).unwrap();
         assert!(actor_from_token(&store, &token).is_err());
+    }
+
+    #[test]
+    fn register_anonymous_is_not_admin() {
+        let tmp = tempfile::tempdir().unwrap();
+        let store = Store::open(tmp.path());
+        store.ensure_layout().unwrap();
+        let out = register(&store, &Actor::Anonymous, "linus", "correct-horse", true).unwrap();
+        let session: Session = serde_json::from_str(out.trim()).unwrap();
+        assert_eq!(session.user, "linus");
+        assert!(!session.admin);
+        let token = session.token.expect("token");
+        assert_eq!(
+            actor_from_token(&store, &token).unwrap(),
+            Actor::User("linus".into())
+        );
+        let err = register(&store, &Actor::Anonymous, "linus", "correct-horse", true).unwrap_err();
+        assert!(err.to_string().contains("already exists"));
+        let signed_in = register(
+            &store,
+            &Actor::User("linus".into()),
+            "pat",
+            "correct-horse",
+            true,
+        )
+        .unwrap_err();
+        assert!(signed_in.to_string().contains("already signed in"));
     }
 }

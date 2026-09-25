@@ -352,6 +352,15 @@ pub enum AuthCommands {
         #[arg(long, env = "RABUN_GIT_PASSWORD")]
         password: String,
     },
+    /// Create a non-admin user with a web password (`--anonymous`; rgit-web sign-up)
+    Register {
+        /// Login name
+        #[arg(long)]
+        user: String,
+        /// Web password
+        #[arg(long, env = "RABUN_GIT_PASSWORD")]
+        password: String,
+    },
     /// Revoke the current `--token`
     Logout,
     /// Describe the current actor
@@ -679,11 +688,13 @@ impl Commands {
     }
 
     /// Host commands that write forge data and must run as the systemd user.
+    ///
+    /// `auth login|logout|whoami|register` are excluded so `rgit-web` (user
+    /// `rgit-web`, group `rabun-git`) can issue tokens and accept sign-up.
     pub fn requires_service_uid(&self) -> bool {
         matches!(
             self,
             Commands::Init
-                | Commands::Auth { .. }
                 | Commands::User { .. }
                 | Commands::Repo { .. }
                 | Commands::Access { .. }
@@ -710,6 +721,20 @@ mod tests {
         assert!(!Commands::Shell.requires_service_uid());
         assert!(Commands::User {
             command: UserCommands::List
+        }
+        .requires_service_uid());
+        assert!(!Commands::Auth {
+            command: AuthCommands::Login {
+                user: "ada".into(),
+                password: "correct-horse".into(),
+            }
+        }
+        .requires_service_uid());
+        assert!(!Commands::Auth {
+            command: AuthCommands::Register {
+                user: "linus".into(),
+                password: "correct-horse".into(),
+            }
         }
         .requires_service_uid());
         assert!(!Commands::Check.requires_service_uid());

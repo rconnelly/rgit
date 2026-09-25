@@ -204,6 +204,29 @@ async fn browse_tree_blob_blame_and_public() {
     assert!(json.contains("alice/app"));
 }
 
+#[tokio::test]
+async fn empty_repo_tree_and_log() {
+    if !git_ok() {
+        return;
+    }
+    let tmp = tempfile::tempdir().unwrap();
+    let store = Store::open(tmp.path());
+    store.ensure_layout().unwrap();
+    store.add_user("alice", true).unwrap();
+    let name = RepoName::parse("alice/empty").unwrap();
+    repo::create(&store, &Actor::Operator, &name).await.unwrap();
+    let tree = rabun_git::browse::tree(&store, &Actor::Operator, &name, "HEAD", "")
+        .await
+        .unwrap();
+    assert!(tree.entries.is_empty());
+    let log = rabun_git::browse::log(&store, &Actor::Operator, &name, "master", None, 10)
+        .await
+        .unwrap();
+    assert!(log.commits.is_empty());
+    let info = repo::info(&store, &Actor::Operator, &name).await.unwrap();
+    assert!(info.default_branch.is_none());
+}
+
 #[test]
 fn web_password_and_token() {
     let tmp = tempfile::tempdir().unwrap();

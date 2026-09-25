@@ -1,6 +1,6 @@
 # Users and roles
 
-Rabun Git has no sign-up page. An admin creates a **user**, attaches that person’s **SSH public key**, then **grants a role** on each repository they should see.
+Rabun Git has no public sign-up in the CLI. An admin creates a **user**, attaches that person’s **SSH public key**, then **grants a role** on each repository they should see. The website may offer invite-gated sign-up (`auth register`); that path never creates a forge admin.
 
 This page is a set of workflows. Run `rabun-git …` on the server (operator, full access), over SSH if you are a forge admin, or from this machine after `rgit remote add origin git@git.example.com`:
 

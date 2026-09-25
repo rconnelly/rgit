@@ -7,6 +7,15 @@ use std::process::Stdio;
 use anyhow::{bail, Context, Result};
 use tokio::process::Command;
 
+/// `git -c safe.directory=* …` so group-shared forge repos are readable.
+/// Git 2.35+ refuses a repo whose directory uid ≠ the process uid (CVE-2022-24765).
+/// Serve runs as `rabun-git`; web create/browse runs as `rgit-web`.
+pub fn command() -> Command {
+    let mut cmd = Command::new("git");
+    cmd.args(["-c", "safe.directory=*"]);
+    cmd
+}
+
 /// Run `git -C repo args...` and fail on non-zero exit.
 pub async fn git(repo: &Path, args: &[&str]) -> Result<()> {
     let output = git_output_raw(repo, args).await?;
@@ -35,7 +44,7 @@ pub async fn git_stdout(repo: &Path, args: &[&str]) -> Result<String> {
 
 /// `git` without `-C` (for `init --bare` on a new path).
 pub async fn git_global(args: &[&str]) -> Result<()> {
-    let output = Command::new("git")
+    let output = command()
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -65,7 +74,7 @@ pub fn git_on_path() -> bool {
 
 /// All refs in a (usually bare) repo: name → object id.
 pub async fn list_refs(repo: &Path) -> Result<BTreeMap<String, String>> {
-    let output = Command::new("git")
+    let output = command()
         .current_dir(repo)
         .args(["for-each-ref", "--format=%(refname)%09%(objectname)"])
         .stdout(Stdio::piped())
@@ -92,20 +101,30 @@ pub async fn list_refs(repo: &Path) -> Result<BTreeMap<String, String>> {
 }
 
 /// Default branch name (`master` / `main`) without `refs/heads/`.
+/// Unborn HEAD (new bare repo, no commits) is an error, not `master`.
 pub async fn default_branch(repo: &Path) -> Result<String> {
-    match git_stdout(repo, &["symbolic-ref", "--short", "HEAD"]).await {
-        Ok(name) if !name.is_empty() => Ok(name),
+    let candidate = match git_stdout(repo, &["symbolic-ref", "--short", "HEAD"]).await {
+        Ok(name) if !name.is_empty() => name,
         _ => {
             let refs = list_refs(repo).await?;
             if refs.contains_key("refs/heads/master") {
-                Ok("master".into())
+                "master".into()
             } else if refs.contains_key("refs/heads/main") {
-                Ok("main".into())
+                "main".into()
             } else {
-                bail!("repository has no default branch yet");
+                bail!("empty repository");
             }
         }
+    };
+    if rev_parse(repo, &candidate).await.is_err() {
+        bail!("empty repository");
     }
+    Ok(candidate)
+}
+
+/// True when HEAD does not resolve (no commits yet).
+pub async fn is_unborn(repo: &Path) -> bool {
+    rev_parse(repo, "HEAD").await.is_err()
 }
 
 /// Resolve a branch or SHA to a 40-character object name.
@@ -121,7 +140,7 @@ pub async fn is_ancestor(repo: &Path, ancestor: &str, desc: &str) -> Result<bool
 
 /// Write a blob and return its object id.
 pub async fn hash_blob(repo: &Path, bytes: &[u8]) -> Result<String> {
-    let mut child = Command::new("git")
+    let mut child = command()
         .current_dir(repo)
         .args(["hash-object", "-w", "--stdin"])
         .stdin(Stdio::piped())
@@ -278,7 +297,7 @@ pub async fn ls_tree_prefix(repo: &Path, sha: &str, prefix: &str) -> Result<Vec<
 }
 
 async fn git_output_raw(repo: &Path, args: &[&str]) -> Result<std::process::Output> {
-    Command::new("git")
+    command()
         .current_dir(repo)
         .args(args)
         .stdout(Stdio::piped())

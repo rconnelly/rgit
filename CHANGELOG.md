@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+### Added
+
+- `rgit --anonymous auth register --user --password` creates a non-admin web user and issues a token (rgit-web sign-up)
+
 ## [0.15.0] - 2026-09-25
 
 ### Added

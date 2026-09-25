@@ -64,6 +64,7 @@ fn auth_cmd(
 ) -> Result<String> {
     let inner = match command {
         AuthCommands::Login { user, password } => auth::Command::Login { user, password },
+        AuthCommands::Register { user, password } => auth::Command::Register { user, password },
         AuthCommands::Logout => auth::Command::Logout,
         AuthCommands::Whoami => auth::Command::Whoami,
         AuthCommands::Token {

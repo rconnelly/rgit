@@ -192,7 +192,18 @@ pub async fn tree(
     path: &str,
 ) -> Result<Tree> {
     let repo = readable_path(store, actor, name).await?;
-    let resolved = git::rev_parse(&repo, git_ref).await?;
+    let resolved = match git::rev_parse(&repo, git_ref).await {
+        Ok(sha) => sha,
+        Err(_) if git::is_unborn(&repo).await => {
+            return Ok(Tree {
+                repo: name.to_string(),
+                git_ref: git_ref.to_string(),
+                path: path.trim_matches('/').to_string(),
+                entries: Vec::new(),
+            });
+        }
+        Err(err) => return Err(err),
+    };
     let path = path.trim_matches('/').to_string();
     let spec = if path.is_empty() {
         resolved.clone()
@@ -363,7 +374,20 @@ pub async fn log(
     limit: usize,
 ) -> Result<Log> {
     let repo = readable_path(store, actor, name).await?;
-    let resolved = git::rev_parse(&repo, git_ref).await?;
+    let resolved = match git::rev_parse(&repo, git_ref).await {
+        Ok(sha) => sha,
+        Err(_) if git::is_unborn(&repo).await => {
+            return Ok(Log {
+                repo: name.to_string(),
+                git_ref: git_ref.to_string(),
+                path: path
+                    .map(|p| p.trim_matches('/').to_string())
+                    .filter(|p| !p.is_empty()),
+                commits: Vec::new(),
+            });
+        }
+        Err(err) => return Err(err),
+    };
     let limit_s = limit.max(1).to_string();
     let mut args = vec![
         "log".into(),
