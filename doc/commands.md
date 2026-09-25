@@ -83,9 +83,16 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 
 | Command | What it does |
 | --- | --- |
-| `rabun-git user add NAME [--admin]` | Create user or update forge-admin flag |
+| `rabun-git user add NAME [--admin] [--password …]` | Create user or update forge-admin flag |
 | `rabun-git user list` | List logins |
-| `rabun-git user remove NAME` | Delete user, keys, and all grants |
+| `rabun-git user remove NAME` | Delete user, keys, grants, and web tokens |
+| `rabun-git user passwd NAME --password …` | Set a web password (SSH still uses keys) |
+| `rabun-git auth login --user NAME --password …` | Issue a bearer token for `rgit-web` |
+| `rabun-git auth whoami` | Current actor (`--token` or operator) |
+| `rabun-git auth logout` | Revoke `--token` |
+| `rabun-git auth token create [USER]` | Issue a token without a password |
+| `rabun-git auth token list [--user NAME]` | List token prefixes |
+| `rabun-git auth token revoke TOKEN` | Revoke by secret or prefix |
 | `rabun-git key add USER --file KEY.pub` | Append OpenSSH public keys from a local file |
 | `rabun-git key add USER --literal 'ssh-ed25519 AAAA…'` | Append a key given on the command line |
 | `rabun-git key list USER` | Fingerprints only |
@@ -95,10 +102,18 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 
 | Command | What it does |
 | --- | --- |
-| `rabun-git repo create owner/name` | Create a bare repo; creator gets repo admin |
+| `rabun-git repo create owner/name [--public]` | Create a bare repo; creator gets repo admin |
 | `rabun-git repo list` | Repos the caller can read |
 | `rabun-git repo list --user NAME` | Repos that user can access (self or forge admin) |
-| `rabun-git repo show owner/name` | Path and grants |
+| `rabun-git repo show owner/name` | Path, clone URL, visibility, grants |
+| `rabun-git repo tree owner/name [--ref HEAD] [--path DIR]` | Directory listing |
+| `rabun-git repo blob owner/name --path FILE [--ref HEAD]` | File contents |
+| `rabun-git repo blame owner/name --path FILE [--ref HEAD]` | Line blame |
+| `rabun-git repo log owner/name [--ref HEAD] [--path FILE] [--limit N]` | Commit history |
+| `rabun-git repo commit owner/name SHA` | One commit |
+| `rabun-git repo refs owner/name` | Branches and tags |
+| `rabun-git repo diff owner/name --base A --head B` | Unified diff |
+| `rabun-git repo visibility owner/name --public\|--private` | Public browse vs ACL-only |
 | `rabun-git access grant USER owner/name [--role read\|write\|admin]` | Set role (`write` if omitted) |
 | `rabun-git access revoke USER owner/name` | Remove that user’s grant |
 
@@ -111,6 +126,7 @@ URL forms: `HOST`, `user@HOST`, `user@HOST:port`, `ssh://user@HOST:port`. Defaul
 | `rabun-git request show owner/name ID` | One request |
 | `rabun-git request review owner/name ID [--approve\|--reject] [--comment TEXT]` | Review |
 | `rabun-git request merge owner/name ID` | Fast-forward the base branch |
+| `rabun-git request diff owner/name ID` | Unified diff and commits on the request |
 | `rabun-git run list owner/name` | CI runs |
 | `rabun-git run show owner/name ID` | Status YAML |
 | `rabun-git run logs owner/name ID` | Captured log |
@@ -138,6 +154,10 @@ ssh://git@HOST:2222/owner/name.git
 | `RABUN_GIT_CONFIG` | Path to `rabun-git.toml` |
 | `RABUN_GIT_REMOTES` | Named remotes file on this machine (default `~/.config/rabun-git/remotes.toml`) |
 | `RABUN_GIT_SSH_IDENTITY` | Private key for `rabun-git origin …` |
+| `RABUN_GIT_JSON` | Same as `--json` (machine-readable stdout for `rgit-web`) |
+| `RABUN_GIT_TOKEN` | Bearer token (`rgit_…`) for web identity |
+| `RABUN_GIT_PASSWORD` | Web password for `auth login` / `user passwd` |
+| `RABUN_GIT_PUBLIC_HOST` | Host name used in clone URLs |
 
 Special push to open a request:
 

@@ -4,6 +4,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Context, Result};
+use serde::Serialize;
 
 use crate::acl::{self, Actor, Role};
 use crate::git;
@@ -22,6 +23,7 @@ exec "$RABUN_GIT_BIN" hook update "$1" "$2" "$3"
 pub async fn create(store: &Store, actor: &Actor, name: &RepoName) -> Result<()> {
     match actor {
         Actor::Operator => {}
+        Actor::Anonymous => bail!("sign in to create a repository"),
         Actor::User(user) => {
             if actor.is_forge_admin(store)? {
                 // ok
@@ -71,24 +73,133 @@ pub fn list_for_user(store: &Store, actor: &Actor, user: &str) -> Result<Vec<Rep
     Ok(out)
 }
 
+/// One repository as shown to the web UI / `--json`.
+#[derive(Clone, Debug, Serialize)]
+pub struct RepoInfo {
+    /// `owner/name`.
+    pub name: String,
+    /// Bare repo path.
+    pub path: String,
+    /// `public` or `private`.
+    pub visibility: String,
+    /// Default branch, if the repo has commits.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_branch: Option<String>,
+    /// SSH clone URL.
+    pub clone_url: String,
+    /// First line of git `description`, if set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    /// Effective role for the current actor (`read` / `write` / `admin`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<String>,
+    /// ACL entries.
+    pub access: Vec<AccessEntry>,
+}
+
+/// One ACL row.
+#[derive(Clone, Debug, Serialize)]
+pub struct AccessEntry {
+    /// Forge login.
+    pub user: String,
+    /// `read`, `write`, or `admin`.
+    pub role: String,
+}
+
+/// SSH clone URL for `name`.
+pub fn clone_url(name: &RepoName) -> String {
+    let bind = std::env::var("RABUN_GIT_SSH_BIND").unwrap_or_else(|_| "0.0.0.0:2222".into());
+    let (host, port) = match bind.rsplit_once(':') {
+        Some((h, p)) => {
+            let host = std::env::var("RABUN_GIT_PUBLIC_HOST")
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .unwrap_or_else(|| {
+                    if h == "0.0.0.0" || h == "::" || h.is_empty() {
+                        "localhost".into()
+                    } else {
+                        h.trim_matches(|c| c == '[' || c == ']').to_string()
+                    }
+                });
+            (host, p.to_string())
+        }
+        None => (
+            std::env::var("RABUN_GIT_PUBLIC_HOST").unwrap_or_else(|_| "localhost".into()),
+            "2222".into(),
+        ),
+    };
+    format!("ssh://git@{host}:{port}/{name}.git")
+}
+
 /// Show one repo (must be readable).
 pub fn show(store: &Store, actor: &Actor, name: &RepoName) -> Result<String> {
+    Ok(format_info(&info_sync(store, actor, name)?))
+}
+
+/// Structured repo metadata (async default branch).
+pub async fn info(store: &Store, actor: &Actor, name: &RepoName) -> Result<RepoInfo> {
+    let mut info = info_sync(store, actor, name)?;
+    let path = store.repo_path(name);
+    info.default_branch = git::default_branch(&path).await.ok();
+    Ok(info)
+}
+
+fn info_sync(store: &Store, actor: &Actor, name: &RepoName) -> Result<RepoInfo> {
     acl::require(store, actor, name, Role::Read)?;
     let path = store.repo_path(name);
     if !path.exists() {
         bail!("repository {name} not found");
     }
     let access = store.load_access()?;
-    let mut lines = vec![
-        format!("repository: {name}"),
-        format!("path: {}", path.display()),
-    ];
+    let mut entries = Vec::new();
     if let Some(roles) = access.repos.get(&name.to_string()) {
         for (user, role) in roles {
-            lines.push(format!("access: {user} {role}"));
+            entries.push(AccessEntry {
+                user: user.clone(),
+                role: role.to_string(),
+            });
         }
     }
-    Ok(lines.join("\n") + "\n")
+    let description = std::fs::read_to_string(path.join("description"))
+        .ok()
+        .map(|text| text.trim().to_string())
+        .filter(|text| !text.is_empty() && !text.starts_with("Unnamed repository"));
+    let visibility = if store.is_public(name)? {
+        "public"
+    } else {
+        "private"
+    };
+    let role = acl::role(store, actor, name)?.map(|r| r.to_string());
+    Ok(RepoInfo {
+        name: name.to_string(),
+        path: path.display().to_string(),
+        visibility: visibility.into(),
+        default_branch: None,
+        clone_url: clone_url(name),
+        description,
+        role,
+        access: entries,
+    })
+}
+
+fn format_info(info: &RepoInfo) -> String {
+    let mut lines = vec![
+        format!("repository: {}", info.name),
+        format!("path: {}", info.path),
+        format!("visibility: {}", info.visibility),
+        format!("clone: {}", info.clone_url),
+    ];
+    if let Some(branch) = &info.default_branch {
+        lines.push(format!("default_branch: {branch}"));
+    }
+    if let Some(description) = &info.description {
+        lines.push(format!("description: {description}"));
+    }
+    for entry in &info.access {
+        lines.push(format!("access: {} {}", entry.user, entry.role));
+    }
+    lines.join("\n") + "\n"
 }
 
 /// Install the update hook that defers to `rabun-git hook update`.

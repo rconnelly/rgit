@@ -43,6 +43,12 @@ impl Store {
         if !self.builders_path().exists() {
             self.save_builders(&BuildersFile::default())?;
         }
+        if !self.tokens_path().exists() {
+            self.save_tokens(&crate::auth::TokensFile::default())?;
+        }
+        if !self.visibility_path().exists() {
+            self.save_visibility(&VisibilityFile::default())?;
+        }
         Ok(())
     }
 
@@ -61,6 +67,14 @@ impl Store {
 
     fn builders_path(&self) -> PathBuf {
         self.root.join("builders.yaml")
+    }
+
+    fn tokens_path(&self) -> PathBuf {
+        self.root.join("tokens.yaml")
+    }
+
+    fn visibility_path(&self) -> PathBuf {
+        self.root.join("visibility.yaml")
     }
 
     /// `keys/<user>.pub`
@@ -157,6 +171,7 @@ impl Store {
             users.users.push(UserRecord {
                 name: name.to_string(),
                 admin,
+                password_hash: None,
             });
         }
         self.save_users(&users)
@@ -171,6 +186,7 @@ impl Store {
             bail!("user {name} not found");
         }
         self.save_users(&users)?;
+        let _ = self.revoke_user_tokens(name);
         let keys = self.keys_path(name);
         if keys.exists() {
             fs::remove_file(&keys).with_context(|| format!("remove {}", keys.display()))?;
@@ -324,6 +340,58 @@ impl Store {
         }
         self.save_access(&access)
     }
+
+    /// Load `tokens.yaml`.
+    pub fn load_tokens(&self) -> Result<crate::auth::TokensFile> {
+        read_yaml(&self.tokens_path())
+    }
+
+    /// Write `tokens.yaml` atomically (mode follows umask; keep the forge root private).
+    pub fn save_tokens(&self, tokens: &crate::auth::TokensFile) -> Result<()> {
+        write_yaml(&self.tokens_path(), tokens)
+    }
+
+    /// Load `visibility.yaml`.
+    pub fn load_visibility(&self) -> Result<VisibilityFile> {
+        read_yaml(&self.visibility_path())
+    }
+
+    /// Write `visibility.yaml`.
+    pub fn save_visibility(&self, file: &VisibilityFile) -> Result<()> {
+        write_yaml(&self.visibility_path(), file)
+    }
+
+    /// True when the repo is listed as public.
+    pub fn is_public(&self, repo: &RepoName) -> Result<bool> {
+        Ok(self
+            .load_visibility()?
+            .repos
+            .get(&repo.to_string())
+            .map(|value| value == "public")
+            .unwrap_or(false))
+    }
+
+    /// Set `public` or `private` for `repo`.
+    pub fn set_visibility(&self, repo: &RepoName, public: bool) -> Result<()> {
+        let mut file = self.load_visibility()?;
+        let key = repo.to_string();
+        if public {
+            file.repos.insert(key, "public".into());
+        } else {
+            file.repos.shift_remove(&key);
+        }
+        self.save_visibility(&file)
+    }
+
+    /// Replace the stored password hash (`None` clears it).
+    pub fn set_password_hash(&self, user: &str, hash: Option<&str>) -> Result<()> {
+        let mut users = self.load_users()?;
+        let Some(record) = users.users.iter_mut().find(|u| u.name == user) else {
+            bail!("user {user} not found");
+        };
+        record.password_hash = hash.map(str::to_string);
+        self.save_users(&users)
+    }
 }
 
 /// `users.yaml` document.
@@ -354,6 +422,17 @@ pub struct UserRecord {
     /// When true, bypasses per-repo ACL.
     #[serde(default)]
     pub admin: bool,
+    /// Argon2id PHC string for web login. SSH does not use this.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub password_hash: Option<String>,
+}
+
+/// `visibility.yaml` — `owner/name` → `public` (missing means private).
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct VisibilityFile {
+    /// Per-repo visibility.
+    #[serde(default)]
+    pub repos: indexmap::IndexMap<String, String>,
 }
 
 /// `access.yaml` document.

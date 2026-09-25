@@ -7,7 +7,7 @@ Rgit is Git with etiquette. Self-hosted **git forge CLI**: bare repositories ove
 
 It's a complete rewrite of MoriGM's rgit. [MoriGM/rgit](https://github.com/MoriGM/rgit)
 
-Browse a local clone (or a bare repo on the host) with `rgit view` — a loopback Zola preview, not HTTP on `serve`.
+Browse a local clone (or a bare repo on the host) with `rgit view` — a loopback Zola preview, not HTTP on `serve`. The GitHub-style UI lives in **rgit-web** (Bun + React) and talks to this CLI with `--json` (no database).
 
 If you already use `git clone` / `git push`, you can run this on a server you own and point `origin` at it.
 

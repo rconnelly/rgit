@@ -14,15 +14,17 @@ use crate::store::Store;
 pub enum Actor {
     /// Local CLI on the forge host (full access).
     Operator,
-    /// Authenticated SSH user.
+    /// Authenticated SSH user or web token.
     User(String),
+    /// Unauthenticated web visitor (public repos only).
+    Anonymous,
 }
 
 impl Actor {
     /// SSH or local user name, if any.
     pub fn name(&self) -> Option<&str> {
         match self {
-            Actor::Operator => None,
+            Actor::Operator | Actor::Anonymous => None,
             Actor::User(name) => Some(name.as_str()),
         }
     }
@@ -31,6 +33,7 @@ impl Actor {
     pub fn author(&self) -> &str {
         match self {
             Actor::Operator => "operator",
+            Actor::Anonymous => "anonymous",
             Actor::User(name) => name.as_str(),
         }
     }
@@ -39,6 +42,7 @@ impl Actor {
     pub fn is_forge_admin(&self, store: &Store) -> Result<bool> {
         match self {
             Actor::Operator => Ok(true),
+            Actor::Anonymous => Ok(false),
             Actor::User(name) => Ok(store.load_users()?.is_admin(name)),
         }
     }
@@ -91,10 +95,18 @@ pub fn role(store: &Store, actor: &Actor, repo: &RepoName) -> Result<Option<Role
     if actor.is_forge_admin(store)? {
         return Ok(Some(Role::Admin));
     }
-    let Actor::User(name) = actor else {
-        return Ok(Some(Role::Admin));
+    let granted = match actor {
+        Actor::User(name) => store.load_access()?.role(repo, name),
+        Actor::Operator => return Ok(Some(Role::Admin)),
+        Actor::Anonymous => None,
     };
-    Ok(store.load_access()?.role(repo, name))
+    if granted.is_some() {
+        return Ok(granted);
+    }
+    if store.is_public(repo)? {
+        return Ok(Some(Role::Read));
+    }
+    Ok(None)
 }
 
 /// Require `needed` on `repo`.

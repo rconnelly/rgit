@@ -8,12 +8,15 @@
 
 pub mod acl;
 pub mod agent;
+pub mod auth;
+pub mod browse;
 pub mod cli;
 pub mod config;
 pub mod dispatch;
 pub mod git;
 pub mod hook;
 pub mod names;
+pub mod output;
 pub mod release;
 pub mod remote;
 pub mod repo;

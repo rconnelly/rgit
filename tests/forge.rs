@@ -150,3 +150,80 @@ jobs:
         .await
         .unwrap();
 }
+
+#[tokio::test]
+async fn browse_tree_blob_blame_and_public() {
+    if !git_ok() {
+        return;
+    }
+    let tmp = tempfile::tempdir().unwrap();
+    let store = Store::open(tmp.path());
+    store.ensure_layout().unwrap();
+    store.add_user("alice", true).unwrap();
+    let name = RepoName::parse("alice/app").unwrap();
+    seed_repo(
+        &store,
+        &name,
+        "name: ci\non:\n  push:\n    branches: [master]\njobs:\n  ok:\n    steps:\n      - run: true\n",
+    )
+    .await;
+    store.set_visibility(&name, true).unwrap();
+
+    let tree = rabun_git::browse::tree(&store, &Actor::Anonymous, &name, "HEAD", "")
+        .await
+        .unwrap();
+    assert!(tree.entries.iter().any(|e| e.name == "README.md"));
+
+    let blob = rabun_git::browse::blob(&store, &Actor::Anonymous, &name, "HEAD", "README.md")
+        .await
+        .unwrap();
+    assert_eq!(blob.content.as_deref(), Some("hi\n"));
+
+    let blame = rabun_git::browse::blame(&store, &Actor::Anonymous, &name, "HEAD", "README.md")
+        .await
+        .unwrap();
+    assert!(!blame.lines.is_empty());
+    assert_eq!(blame.lines[0].text, "hi");
+
+    let log = rabun_git::browse::log(&store, &Actor::Anonymous, &name, "HEAD", None, 10)
+        .await
+        .unwrap();
+    assert_eq!(log.commits.len(), 1);
+
+    let json = rabun_git::dispatch::execute_fmt(
+        &store,
+        &Actor::Anonymous,
+        rabun_git::cli::Commands::Repo {
+            command: rabun_git::cli::RepoCommands::List { user: None },
+        },
+        true,
+        None,
+    )
+    .await
+    .unwrap();
+    assert!(json.contains("alice/app"));
+}
+
+#[test]
+fn web_password_and_token() {
+    let tmp = tempfile::tempdir().unwrap();
+    let store = Store::open(tmp.path());
+    store.ensure_layout().unwrap();
+    store.add_user("ada", false).unwrap();
+    rabun_git::auth::set_password(&store, &Actor::Operator, "ada", "correct-horse").unwrap();
+    let out = rabun_git::auth::execute(
+        &store,
+        &Actor::Anonymous,
+        rabun_git::auth::Command::Login {
+            user: "ada".into(),
+            password: "correct-horse".into(),
+        },
+        true,
+        None,
+    )
+    .unwrap();
+    let session: rabun_git::auth::Session = serde_json::from_str(out.trim()).unwrap();
+    let token = session.token.expect("token");
+    let actor = rabun_git::auth::actor_from_token(&store, &token).unwrap();
+    assert_eq!(actor, Actor::User("ada".into()));
+}

@@ -252,7 +252,15 @@ async fn handle_exec(
             if cli.command.ssh_forbidden() {
                 return send_text(channel, "command not available over SSH\n".into(), 1).await;
             }
-            match dispatch::execute(&store, &Actor::User(user), cli.command).await {
+            match dispatch::execute_fmt(
+                &store,
+                &Actor::User(user),
+                cli.command,
+                cli.json,
+                cli.token.as_deref(),
+            )
+            .await
+            {
                 Ok(out) => send_text(channel, out, 0).await,
                 Err(err) => send_text(channel, format!("{err:#}\n"), 1).await,
             }

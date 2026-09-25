@@ -20,6 +20,15 @@ pub struct Cli {
     /// SSH private key for a named remote (`rabun-git origin …`)
     #[arg(long, global = true, env = "RABUN_GIT_SSH_IDENTITY")]
     pub identity: Option<PathBuf>,
+    /// Machine-readable JSON on stdout (for `rgit-web` and scripts)
+    #[arg(long, global = true, env = "RABUN_GIT_JSON")]
+    pub json: bool,
+    /// Web session token (`rgit_…`)
+    #[arg(long, global = true, env = "RABUN_GIT_TOKEN")]
+    pub token: Option<String>,
+    /// Unauthenticated actor (public repos only)
+    #[arg(long, global = true)]
+    pub anonymous: bool,
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -105,6 +114,11 @@ pub enum Commands {
         #[command(subcommand)]
         command: RemoteCommands,
     },
+    /// Web passwords and session tokens
+    Auth {
+        #[command(subcommand)]
+        command: AuthCommands,
+    },
     /// Forge users (`users.yaml`)
     User {
         #[command(subcommand)]
@@ -164,6 +178,9 @@ pub enum UserCommands {
         /// Forge-wide admin (bypass ACL, manage users)
         #[arg(long)]
         admin: bool,
+        /// Web password (SSH still uses keys)
+        #[arg(long, env = "RABUN_GIT_PASSWORD")]
+        password: Option<String>,
     },
     /// List users
     List,
@@ -171,6 +188,14 @@ pub enum UserCommands {
     Remove {
         /// Login name
         name: String,
+    },
+    /// Set a web password
+    Passwd {
+        /// Login name
+        name: String,
+        /// New password
+        #[arg(long, env = "RABUN_GIT_PASSWORD")]
+        password: String,
     },
 }
 
@@ -217,6 +242,9 @@ pub enum RepoCommands {
     Create {
         /// `owner/name`
         name: RepoName,
+        /// Anyone may clone and browse (still write-protected)
+        #[arg(long)]
+        public: bool,
     },
     /// List repositories the actor can read
     List {
@@ -228,6 +256,131 @@ pub enum RepoCommands {
     Show {
         /// `owner/name`
         name: RepoName,
+    },
+    /// Directory listing at a revision
+    Tree {
+        /// `owner/name`
+        name: RepoName,
+        /// Git revision (default HEAD)
+        #[arg(long = "ref", default_value = "HEAD")]
+        git_ref: String,
+        /// Directory path (default: repository root)
+        #[arg(long, default_value = "")]
+        path: String,
+    },
+    /// File contents at a revision
+    Blob {
+        /// `owner/name`
+        name: RepoName,
+        /// Git revision (default HEAD)
+        #[arg(long = "ref", default_value = "HEAD")]
+        git_ref: String,
+        /// File path
+        #[arg(long)]
+        path: String,
+    },
+    /// `git blame` for a file
+    Blame {
+        /// `owner/name`
+        name: RepoName,
+        /// Git revision (default HEAD)
+        #[arg(long = "ref", default_value = "HEAD")]
+        git_ref: String,
+        /// File path
+        #[arg(long)]
+        path: String,
+    },
+    /// Commit history
+    Log {
+        /// `owner/name`
+        name: RepoName,
+        /// Git revision (default HEAD)
+        #[arg(long = "ref", default_value = "HEAD")]
+        git_ref: String,
+        /// Optional path filter
+        #[arg(long)]
+        path: Option<String>,
+        /// Maximum commits (default 50)
+        #[arg(long, default_value_t = 50)]
+        limit: usize,
+    },
+    /// One commit
+    Commit {
+        /// `owner/name`
+        name: RepoName,
+        /// Commit SHA or ref
+        sha: String,
+    },
+    /// Branches and tags
+    Refs {
+        /// `owner/name`
+        name: RepoName,
+    },
+    /// Unified diff between two revisions
+    Diff {
+        /// `owner/name`
+        name: RepoName,
+        /// Base revision
+        #[arg(long)]
+        base: String,
+        /// Head revision
+        #[arg(long)]
+        head: String,
+    },
+    /// Set public or private
+    Visibility {
+        /// `owner/name`
+        name: RepoName,
+        /// Anyone may browse
+        #[arg(long, conflicts_with = "private")]
+        public: bool,
+        /// ACL only
+        #[arg(long)]
+        private: bool,
+    },
+}
+
+/// `rabun-git auth` subcommands (web passwords and tokens).
+#[derive(Subcommand)]
+pub enum AuthCommands {
+    /// Verify a password and issue a bearer token
+    Login {
+        /// Login name
+        #[arg(long)]
+        user: String,
+        /// Web password
+        #[arg(long, env = "RABUN_GIT_PASSWORD")]
+        password: String,
+    },
+    /// Revoke the current `--token`
+    Logout,
+    /// Describe the current actor
+    Whoami,
+    /// Bearer tokens
+    Token {
+        #[command(subcommand)]
+        command: TokenCommands,
+    },
+}
+
+/// `rabun-git auth token` subcommands.
+#[derive(Subcommand)]
+pub enum TokenCommands {
+    /// Issue a token (no password)
+    Create {
+        /// Login name (default: current user)
+        user: Option<String>,
+    },
+    /// List token prefixes
+    List {
+        /// Login name (default: current user, or all for admins)
+        #[arg(long)]
+        user: Option<String>,
+    },
+    /// Revoke by raw token or prefix
+    Revoke {
+        /// Raw token or prefix
+        token: String,
     },
 }
 
@@ -303,6 +456,13 @@ pub enum RequestCommands {
     },
     /// Fast-forward the base branch to the request head
     Merge {
+        /// `owner/name`
+        repo: RepoName,
+        /// Request id
+        id: u64,
+    },
+    /// Unified diff and commits for a request
+    Diff {
         /// `owner/name`
         repo: RepoName,
         /// Request id
@@ -523,6 +683,7 @@ impl Commands {
         matches!(
             self,
             Commands::Init
+                | Commands::Auth { .. }
                 | Commands::User { .. }
                 | Commands::Repo { .. }
                 | Commands::Access { .. }

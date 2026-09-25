@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 
+### Added
+
+- `--json` on management commands for `rgit-web` (tree, blob, blame, log, refs, diffs, merge requests)
+- Web passwords and bearer tokens: `rgit auth login`, `user passwd`, `RABUN_GIT_TOKEN`
+- Public repositories (`repo create --public`, `repo visibility`) readable by `--anonymous`
+- Git browse commands: `repo tree|blob|blame|log|commit|refs|diff` and `request diff`
+
 ## [0.14.0] - 2026-09-23
 
 ### Added

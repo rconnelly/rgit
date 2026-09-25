@@ -29,10 +29,16 @@ PS1='\[\e[0;36m\](rabun-git)\[\e[0m\] \w \$ '
 async fn main() -> ExitCode {
     load_env();
     init_tracing();
+    let json = std::env::args_os().any(|arg| arg == "--json")
+        || std::env::var_os("RABUN_GIT_JSON").is_some();
     match run().await {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => {
-            eprintln!("{err:#}");
+            if json {
+                print!("{}", rabun_git::output::error_json(&err));
+            } else {
+                eprintln!("{err:#}");
+            }
             ExitCode::FAILURE
         }
     }
@@ -110,14 +116,32 @@ async fn run() -> Result<()> {
         }
         Commands::Shell | Commands::Remote { .. } => unreachable!("handled above"),
         other => {
+            let json = cli.json;
+            let token = cli.token.clone();
             let config = Config::load(cli.config.as_deref())?;
             let store = Store::open(config.root());
             store.ensure_layout()?;
-            let out = rabun_git::dispatch::execute(&store, &Actor::Operator, other).await?;
+            let actor = resolve_actor(&store, cli.anonymous, token.as_deref())?;
+            let out =
+                rabun_git::dispatch::execute_fmt(&store, &actor, other, json, token.as_deref())
+                    .await?;
             print!("{out}");
             Ok(())
         }
     }
+}
+
+fn resolve_actor(store: &Store, anonymous: bool, token: Option<&str>) -> Result<Actor> {
+    if anonymous && token.is_some() {
+        bail!("use --token or --anonymous, not both");
+    }
+    if anonymous {
+        return Ok(Actor::Anonymous);
+    }
+    if let Some(token) = token.map(str::trim).filter(|value| !value.is_empty()) {
+        return rabun_git::auth::actor_from_token(store, token);
+    }
+    Ok(Actor::Operator)
 }
 
 /// `rabun-git origin …` — SSH to a saved forge host.

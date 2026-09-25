@@ -275,6 +275,13 @@ async fn write_request(
     Ok(())
 }
 
+/// Head and base object names for a request.
+pub async fn shas(repo: &std::path::Path, id: u64) -> Result<(String, String)> {
+    let head = git::rev_parse(repo, &head_ref(id)).await?;
+    let base = git::rev_parse(repo, &base_ref(id)).await?;
+    Ok((head, base))
+}
+
 async fn load_meta(repo: &std::path::Path, id: u64) -> Result<RequestMeta> {
     let yaml = git::cat_file(repo, &meta_ref(id))
         .await

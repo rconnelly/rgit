@@ -20,8 +20,10 @@ SSH is the only public network surface (default `0.0.0.0:2222`; russh username `
 
 `$RABUN_GIT_ROOT/` (default `data/git`):
 
-- `users.yaml` — login + forge admin flag
+- `users.yaml` — login + forge admin flag + optional web password hash
 - `keys/<user>.pub` — OpenSSH public keys
+- `tokens.yaml` — SHA-256 hashes of web bearer tokens (`rgit_…`)
+- `visibility.yaml` — `owner/name` → `public` (missing means private)
 - `access.yaml` — `owner/name` → user → `read` \| `write` \| `admin`
 - `repos/<owner>/<name>.git/` — bare repositories
 - `runs/<owner>/<name>/<run-id>/` — `status.yaml` + `job.yaml` + `log.txt`
