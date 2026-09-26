@@ -1,6 +1,6 @@
 # Versioning
 
-Rgit is Git with etiquette. [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) and [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) are the default: `rgit version` infers bumps from those commits, rewrites version files and `CHANGELOG.md`, and the forge can reject a push that breaks the rules.
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) and [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) are the default. `rgit version` infers bumps, rewrites version files and `CHANGELOG.md`, and the forge can reject a push that breaks the rules.
 
 Policy lives in the repo as `.rabun/version.toml`, next to [CI workflows](ci-workflows.md). A release is one commit that updates every version file and the changelog; the annotated tag name must match those files.
 

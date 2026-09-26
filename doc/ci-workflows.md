@@ -1,6 +1,6 @@
 # CI workflows
 
-Rabun Git can run shell commands when someone pushes a branch, pushes a tag, or opens/updates a merge request. This is **not** GitHub Actions: there is no `uses:`, no full matrix, and no containers.
+Run shell commands on push, tag, or merge request. This is **not** GitHub Actions: no `uses:`, no full matrix, no containers.
 
 By default a job runs on the **forge host** (`sh -c`, same user as `rabun-git serve`). Jobs can also target **builder agents** on Linux, macOS, or Windows (`runs-on:`). Agents poll the forge over SSH on port 2222.
 

@@ -1,10 +1,10 @@
 # What is Rabun Git?
 
-Rgit is Git with etiquette. Rabun Git is a **git forge you run yourself**. [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and [SemVer 2.0](https://semver.org/spec/v2.0.0.html) are the default. Teammates use ordinary `git clone` / `git push` over SSH. You manage people, keys, and permissions from the command line. Nothing is sent to GitHub.com. The forge host does not serve a git website; `rgit view` on this machine can preview a local tree in a browser.
+Rgit is Git with etiquette. Rabun Git is a **git forge you run yourself**. [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and [SemVer 2.0](https://semver.org/spec/v2.0.0.html) are the default. Teammates clone and push over SSH. You manage people, keys, and permissions from the command line. Nothing is sent to GitHub.com. `rgit serve` has no HTTP git UI; [`rgit view`](everyday-git.md#browse-locally) previews a local tree. [Rgit Web](https://docs.rgit.rs/web/) is a separate companion.
 
 This guide assumes you already know a little git: commits, branches, and that a **remote** is another copy of a repository you can push to and fetch from.
 
-## The idea in git terms
+## In git terms
 
 On this machine you have a **working copy** (files you edit). GitHub, GitLab, and Rabun Git are all places that store a **remote** copy so other people can get the same history.
 
@@ -36,9 +36,9 @@ Every repository is `owner/name`, for example `ada/website` or `team/warehouse`.
 
 Allowed characters: letters, digits, `.`, `_`, `-`. Names cannot start with `.`.
 
-## What this tool does not do
+## Limits
 
-- No public browser UI on the forge, issues, wiki, or packages (`rgit view` is local-only)
+- No HTTP git UI on `serve`, issues, wiki, or packages (`rgit view` is local-only; Rgit Web is a separate companion)
 - No GitHub Actions `uses:` marketplace
 - Merge is **fast-forward only** (the branch you merge must already contain the target branch)
 - `master` and `main` are **protected**: only a repo or forge **admin** can push them directly. Everyone else opens a merge request.

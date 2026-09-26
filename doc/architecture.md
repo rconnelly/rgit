@@ -1,8 +1,8 @@
-# rabun-git architecture
+# Architecture
 
-How the forge is put together (layout, ACL, systemd). For a beginner walkthrough with examples, start at the [user guide](README.md).
+Layout, ACL, and systemd for operators. For a walkthrough, start at the [user guide](README.md).
 
-Self-hosted git forge CLI. Burton and Rabun do not import this crate. Warehouse workers remain the writers of warehouse trees; this process is a **git remote** they may push to.
+Self-hosted git forge CLI. This process is a **git remote** you push to.
 
 ```
 This machine                     Your server
@@ -14,7 +14,7 @@ This machine                     Your server
                                  .rabun/workflows runner
 ```
 
-SSH is the only public network surface (default `0.0.0.0:2222`; russh username `git`). Loopback `GET /health` is companion heartbeat only (`127.0.0.1:8792`). There is no HTTP git UI on `serve`. On this machine, `rgit view` can render a local tree with Zola on loopback. The systemd user is `rabun-git`; admin SSH on port 22 is unchanged.
+SSH is the only public network surface (default `0.0.0.0:2222`; russh username `git`). Loopback `GET /health` is companion heartbeat only (`127.0.0.1:8792`). There is no HTTP git UI on `serve`. `rgit view` renders a local tree on loopback. The systemd user is `rabun-git`; admin SSH on port 22 is unchanged.
 
 ## Layout
 

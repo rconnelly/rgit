@@ -1,6 +1,6 @@
 # Set up a remote repository
 
-This is the usual first goal: a repository on the forge that other machines can clone and push to.
+Create a repository on the forge that other machines can clone and push to.
 
 In git, a **remote** is a nickname for that server copy. Most people call it `origin`. After these steps, `git push origin` sends commits to Rabun Git the same way it would send them to GitHub.
 
@@ -24,7 +24,7 @@ rabun-git repo create owner/name
 
 The creator is granted **admin** on that repository automatically.
 
-You can run create on the server:
+You can create on the server:
 
 ```bash
 rabun-git repo create ada/website

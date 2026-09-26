@@ -1,8 +1,8 @@
 # Start the forge
 
-Replace `ada` with your login and `git.example.com` with the hostname or IP of the machine that will store repositories.
+Start `serve`, then add the first admin and that user’s SSH key.
 
-There are two ways to get the forge listening. Both still need a **first admin user** and that user’s **first SSH public key** on the host.
+Replace `ada` with your login and `git.example.com` with the hostname or IP. There are two ways to get the forge listening:
 
 | | Pack and push (Ubuntu) | Manual |
 | --- | --- | --- |

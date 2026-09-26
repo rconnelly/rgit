@@ -1,13 +1,13 @@
 # User guide
 
-Rgit is Git with etiquette. Rabun Git is a git forge you run on a machine you own: SSH remotes, users and roles, merge requests, a small CI runner, and Conventional Commits / SemVer 2.0 by default ([how to turn that off](versioning.md#disable-etiquette)). There is no website on the forge host. To read a tree in a browser, use [`rgit view`](everyday-git.md#browse-locally) on this machine.
+Rgit is Git with etiquette. Run a git forge on a machine you own: SSH remotes, users, merge requests, a small CI runner, and Conventional Commits / SemVer 2.0 by default ([turn that off](versioning.md#disable-etiquette)). `rgit serve` has no HTTP git UI. Browse locally with [`rgit view`](everyday-git.md#browse-locally), or add [Rgit Web](https://docs.rgit.rs/web/) as a companion.
 
-If you know `git clone`, `git commit`, and `git push`, start at the top and follow the pages in order. Each page has copy-paste examples (`git.example.com`, user `ada`, repo `ada/website`).
+If you know `git clone`, `git commit`, and `git push`, follow the pages in order. Examples use `git.example.com`, user `ada`, repo `ada/website`.
 
 ## Contents
 
 1. [What is Rabun Git?](what-it-is.md) — how this compares to GitHub and a plain git remote
-2. [Install](install.md) — build the `rabun-git` command
+2. [Install](install.md) — install the `rabun-git` command
 3. [Start the forge](start-the-forge.md) — pack-and-push or manual `init` / `serve`, then first admin and key
 4. [Set up a remote repository](remote-repository.md) — create `owner/name`, add `origin`, first push or clone
 5. [Users and roles](users-and-roles.md) — add people, register keys, grant and revoke `read` / `write` / `admin`
@@ -18,14 +18,14 @@ If you know `git clone`, `git commit`, and `git push`, start at the top and foll
 10. [Command reference](commands.md) — CLI and SSH cheat sheet
 11. [Compared to GitHub](compared-to-github.md) — feature and `gh` command gap analysis
 
-Operators who need on-disk layout, ACL internals, or systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md). Extra disk for `repos/`: [storage volume](storage-volume.md).
+Layout, ACL, systemd: [architecture](architecture.md). Ubuntu pack/push: [deploy Ubuntu](deploy-ubuntu.md). Extra disk for `repos/`: [storage volume](storage-volume.md).
 
-## Two jobs you will do
+## Start here
 
-| Job | Start here |
+| Job | Page |
 | --- | --- |
-| Put an existing or new project on the forge | [Remote repository](remote-repository.md) (after the server is up) |
-| Let teammates in and control who can push | [Users and roles](users-and-roles.md) |
+| Put a project on the forge | [Remote repository](remote-repository.md) |
+| Let teammates in | [Users and roles](users-and-roles.md) |
 
 Clone URL shape used throughout:
 

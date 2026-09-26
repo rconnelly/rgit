@@ -1,6 +1,6 @@
 # Merge requests
 
-A merge request is “please fast-forward `master` (or `main`) to this branch.” There is no web form. Requests are stored **in the git repo** as refs, so they clone with the project.
+A merge request asks to fast-forward `master` or `main` to a branch. Requests are stored **in the git repo** as refs, so they clone with the project.
 
 You need **write** to open or comment. You need repo **admin** (or forge admin) to merge. Review `--approve` does not merge by itself.
 

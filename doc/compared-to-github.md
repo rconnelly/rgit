@@ -1,10 +1,10 @@
 # Compared to GitHub
 
-rgit covers the git-hosting core: remotes, users and keys, path ACL, fast-forward merge requests, in-repo shell CI, and SemVer 2.0 / Conventional Commits by default. It is not a GitHub clone. There is no website on the forge host, and most GitHub products have no counterpart.
+rgit hosts git: remotes, users and keys, path ACL, fast-forward merge requests, shell CI, and SemVer 2.0 / Conventional Commits by default. It is not a GitHub clone. `serve` has no HTTP git UI; most GitHub products have no counterpart.
 
 `rgit` and `rabun-git` are the same program. Examples use `rgit` after `rgit remote add origin git@HOST`.
 
-A shorter map lives in [What is Rabun Git?](what-it-is.md).
+Shorter map: [What is Rabun Git?](what-it-is.md).
 
 ## Hosted git
 

@@ -1,8 +1,8 @@
 # Install
 
-Install the `rabun-git` command on the **server** (the machine that will host repositories). You can also install it on this machine if you want the same CLI locally; clone and push only need `git` and SSH.
+Install `rabun-git` on the server that will host repositories. Clone and push only need `git` and SSH; install the same CLI on this machine if you want it.
 
-`rgit` and `rabun-git` are the same program. `rgit` is the short command (a symlink). Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`. If another `rgit` is already on `PATH` (some recursive-git wrappers use that name), the linker leaves it alone.
+`rgit` and `rabun-git` are the same program. `rgit` is the short command (a symlink). Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`. If another `rgit` is already on `PATH`, the linker leaves it alone.
 
 ## What you need
 

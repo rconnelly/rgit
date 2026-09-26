@@ -1,6 +1,6 @@
 # Command reference
 
-`rgit` and `rabun-git` are the same program. Examples below use `rgit`. Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`.
+CLI and SSH cheat sheet. `rgit` and `rabun-git` are the same program. Examples use `rgit`. Paths, env (`RABUN_GIT_*`), and systemd stay `rabun-git`.
 
 Global flags (all commands):
 

@@ -1,6 +1,6 @@
-# Move the forge root onto a storage volume
+# Storage volume
 
-Keep the path `/var/lib/rabun-git`. Attach a block volume (DigitalOcean Volumes, or any extra disk) and **mount it on that directory** so systemd, `RABUN_GIT_ROOT`, and `ReadWritePaths` stay unchanged. Only git data moves. `/etc/rabun-git` and `/usr/local/bin/rabun-git` stay on the droplet disk. If rgit-web is on the same host, `/opt/rgit-web` stays too.
+Mount a block volume at `/var/lib/rabun-git` so systemd, `RABUN_GIT_ROOT`, and `ReadWritePaths` stay unchanged. Only git data moves. `/etc/rabun-git` and `/usr/local/bin/rabun-git` stay on the droplet disk. If rgit-web is on the same host, `/opt/rgit-web` stays too.
 
 Do this after [Ubuntu deploy](deploy-ubuntu.md). Git clients still use `ssh://git@HOST:2222/owner/name.git`.
 
